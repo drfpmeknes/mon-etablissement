@@ -247,29 +247,54 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- AUTH -->
 <div id="auth">
-  <div class="acard">
+  <!-- TABS -->
+  <div class="acard" id="auth-card">
     <div class="alogo">
       <div class="alogo-ic">🎓</div>
       <div>
-        <div style="font-family:'Playfair Display',serif;font-size:20px" id="login-etab-nom">EduManager Pro</div>
-        <div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">id="login-etab-sub">Gestion Établissement v2</div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px">EduManager Pro</div>
+        <div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">Plateforme Multi-Établissements</div>
       </div>
     </div>
-    <h2 class="atitle">Connexion</h2>
-    <p class="asub">Accès réservé au personnel autorisé</p>
-    <div class="fg"><label>Identifiant</label><input type="text" id="li-u" placeholder="Votre identifiant"></div>
-    <div class="fg"><label>Mot de passe</label><input type="password" id="li-p" placeholder="••••••••"></div>
-    <button class="btn btn-p" style="width:100%;margin-top:4px" onclick="doLogin()">Se connecter</button>
-    <div class="err" id="li-err">Identifiant ou mot de passe incorrect.</div>
-    <div class="demo-box">
-      <p>Comptes de démonstration</p>
-      <div class="demo-row"><span>admin / admin123</span><span>Administrateur</span></div>
-      <div class="demo-row"><span>formateur1 / form123</span><span>Formateur</span></div>
-      <div class="demo-row"><span>stagiaire1 / stag123</span><span>Stagiaire</span></div>
+    <!-- LOGIN TABS -->
+    <div style="display:flex;gap:0;border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden;margin-bottom:18px">
+      <button id="tab-etab" onclick="switchAuthTab('etab')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .2s;background:var(--ac);color:#fff">🏫 Établissement</button>
+      <button id="tab-super" onclick="switchAuthTab('super')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .2s;background:var(--sf2);color:var(--tx2)">⚡ Super Admin</button>
     </div>
+
+    <!-- ETAB LOGIN -->
+    <div id="login-etab">
+      <h2 class="atitle" style="margin-top:0">Connexion Établissement</h2>
+      <p class="asub">Identifiez-vous avec les accès fournis par votre établissement</p>
+      <div class="fg"><label>Identifiant</label><input type="text" id="li-u" placeholder="ex: admin, formateur1..." autocomplete="username"></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" id="li-p" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-p" style="width:100%;margin-top:4px" onclick="doLogin()" id="btn-login">Se connecter</button>
+      <div class="err" id="li-err">Identifiant ou mot de passe incorrect.</div>
+      <div class="demo-box">
+        <p>Comptes de démonstration (mode hors-ligne)</p>
+        <div class="demo-row"><span>admin / admin123</span><span>Administrateur</span></div>
+        <div class="demo-row"><span>formateur1 / form123</span><span>Formateur</span></div>
+        <div class="demo-row"><span>stagiaire1 / stag123</span><span>Stagiaire</span></div>
+      </div>
+    </div>
+
+    <!-- SUPER ADMIN LOGIN -->
+    <div id="login-super" style="display:none">
+      <h2 class="atitle" style="margin-top:0">Super Administration</h2>
+      <p class="asub">Accès réservé à l'administrateur de la plateforme</p>
+      <div class="fg"><label>Identifiant super-admin</label><input type="text" id="sa-u" placeholder="superadmin" autocomplete="username"></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" id="sa-p" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-p" style="width:100%;margin-top:4px;background:var(--pu);border-color:var(--pu)" onclick="doSuperLogin()" id="btn-super-login">Accéder au panneau</button>
+      <div class="err" id="sa-err">Identifiants incorrects.</div>
+      <div class="demo-box" style="border-color:rgba(154,90,200,.3);background:var(--pud)">
+        <p>Compte démo super-admin</p>
+        <div class="demo-row"><span>superadmin / SuperAdmin2025!</span><span>Plateforme</span></div>
+      </div>
+    </div>
+
     <div style="margin-top:14px;text-align:center">
       <button onclick="resetDB()" style="background:none;border:none;color:var(--tx3);font-size:11px;cursor:pointer;text-decoration:underline;padding:4px">
-        🔄 Réinitialiser les données (en cas de problème de connexion)
+        🔄 Réinitialiser les données locales
       </button>
     </div>
   </div>
@@ -483,6 +508,25 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="view" id="vw-parametres">
           <div style="max-width:620px">
             <div class="alert alert-ok" id="al-param"></div>
+            <!-- SUPABASE CONFIG -->
+            <div class="tc" style="margin-bottom:18px">
+              <div class="th"><span class="tt">☁️ Connexion Supabase</span></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+                <div style="background:var(--acd);border:1px solid rgba(200,147,90,.3);border-radius:6px;padding:12px;font-size:12px;color:var(--tx2)">
+                  Entrez vos clés depuis <strong>supabase.com → Settings → API</strong>.<br>
+                  Une fois configuré, les données seront partagées entre tous les appareils.
+                </div>
+                <div class="fg"><label>Project URL</label><input id="p-supa-url" placeholder="https://xxxxxxxxxxxx.supabase.co" style="font-family:'JetBrains Mono',monospace;font-size:12px"></div>
+                <div class="fg"><label>Anon / Public Key</label><input id="p-supa-key" placeholder="eyJhbGc..." style="font-family:'JetBrains Mono',monospace;font-size:11px"></div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button class="btn btn-p btn-sm" onclick="saveSupaConfig()">💾 Sauvegarder & Reconnecter</button>
+                  <button class="btn btn-s btn-sm" onclick="testSupaConnection()">🔌 Tester la connexion</button>
+                  <span id="supa-test-result" style="font-size:12px"></span>
+                </div>
+                <div id="supa-status" style="font-size:12px;padding:8px 12px;border-radius:4px;display:none"></div>
+              </div>
+            </div>
+
             <div class="tc" style="margin-bottom:18px">
               <div class="th"><span class="tt">🏫 Identité de l'établissement</span></div>
               <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
@@ -782,174 +826,394 @@ tr:hover td{background:rgba(255,255,255,.02)}
 // ============================================================
 // DATABASE
 // ============================================================
-const KEY = 'edumgr_v3';
-let DB = {};
+// ============================================================
+// SUPABASE CONFIG — Multi-Tenant
+// ============================================================
+const SUPA_URL = localStorage.getItem('supa_url') || 'VOTRE_SUPABASE_URL';
+const SUPA_KEY = localStorage.getItem('supa_key') || 'VOTRE_SUPABASE_ANON_KEY';
 
-function loadDB() {
-  const r = localStorage.getItem(KEY);
-  if (r) {
-    try {
-      DB = JSON.parse(r);
-      let dirty = false;
-      if (!DB.admin_staff)       { DB.admin_staff=[];  dirty=true; }
-      if (!DB.paie_stag)         { DB.paie_stag=[];    dirty=true; }
-      if (!DB.paie_form)         { DB.paie_form=[];    dirty=true; }
-      if (!DB.paie_admin)        { DB.paie_admin=[];   dirty=true; }
-      if (!DB.depenses)          { DB.depenses=[];     dirty=true; }
-      if (!DB.nid)               { DB.nid={};          dirty=true; }
-      if (!DB.nid.admin_staff)   { DB.nid.admin_staff=1; dirty=true; }
-      if (!DB.nid.paie_stag)     { DB.nid.paie_stag=1;   dirty=true; }
-      if (!DB.nid.paie_form)     { DB.nid.paie_form=1;   dirty=true; }
-      if (!DB.nid.paie_admin)    { DB.nid.paie_admin=1;  dirty=true; }
-      if (!DB.nid.depenses)      { DB.nid.depenses=1;    dirty=true; }
-      if (!DB.anneesScolaires)   { DB.anneesScolaires=['2024-2025','2025-2026']; dirty=true; }
-      if (!DB.anneeCourante)     { DB.anneeCourante='2025-2026'; dirty=true; }
-      if (DB.users) DB.users.forEach(u=>{ if(u.active===undefined){u.active=true;dirty=true;} });
-      if (!DB.etab) { DB.etab={nom:'EduManager Pro',soustitre:'Établissement de Formation Professionnelle',adresse:'',tel:'',email:'',ice:'',logo_emoji:'🎓'}; dirty=true; }
-      if (dirty) save();
-    } catch(e) { initDB(); }
-  } else { initDB(); }
-}
-function resetDB() {
-  if(confirm('Reinitialiser toutes les donnees ? Cette action est irreversible.')) {
-    localStorage.removeItem(KEY);
-    location.reload();
+let OFFLINE_MODE = false;
+const KEY = 'edumgr_v3_cache';
+let DB = {};
+let TENANT_ID = null;
+let SUPER_DATA = { tenants:[], abons:[], counts:{} };
+
+// ============================================================
+// API SUPABASE
+// ============================================================
+const sbH = (extra={}) => ({'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation',...extra});
+const sbReq = async (path, opts={}) => {
+  const r = await fetch(SUPA_URL+'/rest/v1/'+path, {headers:sbH(opts.h||{}), ...opts});
+  if(!r.ok) throw new Error(await r.text());
+  const ct = r.headers.get('content-type')||'';
+  return ct.includes('json') ? r.json() : [];
+};
+const sbGet  = (t,q='') => sbReq(t+'?'+q+(q?'&':'')+'order=id.asc');
+const sbTGet = (t,q='') => sbGet(t,'tenant_id=eq.'+TENANT_ID+(q?'&'+q:''));
+const sbPost = (t,b)    => sbReq(t,{method:'POST',body:JSON.stringify(b)});
+const sbPut  = (t,id,b) => sbReq(t+'?id=eq.'+id+'&tenant_id=eq.'+TENANT_ID,{method:'PATCH',body:JSON.stringify(b)});
+const sbDrop = (t,id)   => sbReq(t+'?id=eq.'+id+'&tenant_id=eq.'+TENANT_ID,{method:'DELETE',h:{'Prefer':'return=minimal'}});
+const sbUps  = (t,b)    => sbReq(t,{method:'POST',h:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(b)});
+
+// ============================================================
+// CHARGEMENT DONNÉES ÉTABLISSEMENT
+// ============================================================
+async function loadDB(tenantId) {
+  if(SUPA_URL==='VOTRE_SUPABASE_URL'){ OFFLINE_MODE=true; loadDBLocal(tenantId); showConfigWarning(); return; }
+  TENANT_ID = tenantId;
+  showLoading(true);
+  try {
+    const TABLES = ['users','admin_staff','formateurs','filieres','groupes','stagiaires',
+      'modules','salles','seances','notes','programme','suivi','paie_stag','paie_form','paie_admin','depenses'];
+    const [tenantArr, ...rows] = await Promise.all([
+      sbGet('tenants','id=eq.'+tenantId),
+      ...TABLES.map(t => sbTGet(t))
+    ]);
+    const T = tenantArr[0]||{};
+    DB.etab = {nom:T.nom||'',soustitre:T.soustitre||'',adresse:T.adresse||'',tel:T.tel||'',email:T.email||'',ice:T.ice||'',logo_emoji:T.logo_emoji||'🎓'};
+    DB.anneesScolaires = T.annees_scolaires||['2024-2025','2025-2026'];
+    DB.anneeCourante   = T.annee_courante  ||'2025-2026';
+    DB.users        = rows[0];
+    DB.admin_staff  = rows[1];
+    DB.formateurs   = rows[2];
+    DB.filieres     = rows[3];
+    DB.groupes      = rows[4];
+    DB.stagiaires   = rows[5].map(s=>({...s,as:s.as_annee}));
+    DB.modules      = rows[6];
+    DB.salles       = rows[7];
+    DB.seances      = rows[8];
+    DB.notes        = rows[9].map(n=>({...n,cc:n.cc||[],th:n.th||[],pr:n.pr||[]}));
+    DB.programme    = rows[10];
+    DB.suivi        = rows[11].map(s=>({...s,next:s.next_seance}));
+    DB.paie_stag    = rows[12].map(p=>({...p,as:p.as_annee}));
+    DB.paie_form    = rows[13].map(p=>({...p,as:p.as_annee}));
+    DB.paie_admin   = rows[14].map(p=>({...p,as:p.as_annee}));
+    DB.depenses     = rows[15].map(d=>({...d,as:d.as_annee}));
+    const actRaw = localStorage.getItem('act_'+tenantId);
+    DB.activity     = JSON.parse(actRaw||'[]');
+    DB.nid = {};
+    localStorage.setItem(KEY+'_'+tenantId, JSON.stringify(DB));
+    showLoading(false);
+  } catch(err) {
+    console.error('Supabase:', err);
+    OFFLINE_MODE = true;
+    loadDBLocal(tenantId);
+    showLoading(false);
+    showBanner('⚠️ Mode hors-ligne — données locales','var(--rd)');
   }
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(DB)); }
+
+function loadDBLocal(tenantId) {
+  const k = tenantId ? KEY+'_'+tenantId : KEY;
+  const r = localStorage.getItem(k);
+  if(r){ try{ DB=JSON.parse(r); return; }catch(e){} }
+  initDB();
+}
+
+function save() {
+  const k = TENANT_ID ? KEY+'_'+TENANT_ID : KEY;
+  localStorage.setItem(k, JSON.stringify(DB));
+  if(TENANT_ID) localStorage.setItem('act_'+TENANT_ID, JSON.stringify(DB.activity||[]));
+}
+
+async function saveEtab() {
+  if(OFFLINE_MODE||!TENANT_ID){ save(); return; }
+  try {
+    await sbReq('tenants?id=eq.'+TENANT_ID,{method:'PATCH',body:JSON.stringify({
+      nom:DB.etab.nom,soustitre:DB.etab.soustitre,adresse:DB.etab.adresse,
+      tel:DB.etab.tel,email:DB.etab.email,ice:DB.etab.ice,
+      annees_scolaires:JSON.stringify(DB.anneesScolaires),
+      annee_courante:DB.anneeCourante
+    })});
+  } catch(e){ console.error('saveEtab:',e); save(); }
+}
+
+async function sbSave(table, record, isNew) {
+  if(OFFLINE_MODE){ save(); return record; }
+  try {
+    const m = mapToSupa(table, {...record, tenant_id:TENANT_ID});
+    let res;
+    if(isNew){ res=await sbPost(table,m); return res[0]; }
+    else     { res=await sbPut(table,record.id,m); return res[0]||record; }
+  } catch(e){ console.error('sbSave:',table,e); save(); return record; }
+}
+
+async function sbDel(table, id) {
+  if(OFFLINE_MODE){ save(); return; }
+  try{ await sbDrop(table,id); } catch(e){ console.error('sbDel:',table,id,e); save(); }
+}
+
+function mapToSupa(table, r) {
+  const m={...r};
+  if('as' in m){ m.as_annee=m.as; delete m.as; }
+  if(table==='suivi'&&'next' in m){ m.next_seance=m.next; delete m.next; }
+  delete m.nid;
+  return m;
+}
+
+// ============================================================
+// SUPERADMIN — données globales
+// ============================================================
+async function loadSuperAdminData() {
+  if(SUPA_URL==='VOTRE_SUPABASE_URL'){ SUPER_DATA=loadSuperAdminLocal(); return; }
+  showLoading(true);
+  try {
+    const [tenants, abons] = await Promise.all([
+      sbGet('tenants','order=date_creation.desc'),
+      sbGet('abonnements','order=created_at.desc')
+    ]);
+    // Count stagiaires/formateurs per tenant
+    const counts = {};
+    await Promise.all(tenants.map(async t => {
+      const [s,f] = await Promise.all([
+        sbReq('stagiaires?tenant_id=eq.'+t.id+'&select=id'),
+        sbReq('formateurs?tenant_id=eq.'+t.id+'&select=id')
+      ]);
+      counts[t.id] = {stags:s.length, forms:f.length};
+    }));
+    SUPER_DATA = {tenants, abons, counts};
+    localStorage.setItem('super_data', JSON.stringify(SUPER_DATA));
+    showLoading(false);
+  } catch(e) {
+    console.error('loadSuperAdmin:',e);
+    SUPER_DATA = loadSuperAdminLocal();
+    showLoading(false);
+  }
+}
+
+function loadSuperAdminLocal() {
+  const r=localStorage.getItem('super_data');
+  return r ? JSON.parse(r) : {tenants:[],abons:[],counts:{}};
+}
+
+async function createTenant(data) {
+  if(SUPA_URL==='VOTRE_SUPABASE_URL'){
+    const t={...data,date_creation:new Date().toISOString(),statut:'actif'};
+    if(!SUPER_DATA.tenants) SUPER_DATA.tenants=[];
+    SUPER_DATA.tenants.unshift(t);
+    // Create default admin user for tenant
+    SUPER_DATA[data.id+'_users']=[{id:1,tenant_id:data.id,username:data.admin_login,password:data.admin_password,nom:data.admin_nom,prenom:data.admin_prenom,role:'admin',active:true}];
+    localStorage.setItem('super_data',JSON.stringify(SUPER_DATA));
+    return t;
+  }
+  try {
+    // 1. Create tenant
+    const tenant = await sbPost('tenants',{id:data.id,nom:data.nom,ville:data.ville||'',tel:data.tel||'',email:data.email||'',adresse:data.adresse||'',soustitre:data.soustitre||'Établissement de Formation Professionnelle',plan:data.plan||'standard',statut:'actif',date_expiration:data.date_expiration||null,nb_stagiaires_max:data.nb_max||200,annees_scolaires:JSON.stringify(['2024-2025','2025-2026']),annee_courante:'2025-2026'});
+    // 2. Create admin user for this tenant
+    await sbPost('users',{tenant_id:data.id,username:data.admin_login,password:data.admin_password,nom:data.admin_nom,prenom:data.admin_prenom,role:'admin',active:true});
+    return tenant[0];
+  } catch(e){ console.error('createTenant:',e); throw e; }
+}
+
+// ============================================================
+// HELPERS UI
+// ============================================================
+function showLoading(v){
+  let el=g('supa-loading');
+  if(!el){
+    el=document.createElement('div');el.id='supa-loading';
+    el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px';
+    el.innerHTML='<div style="width:44px;height:44px;border:3px solid rgba(255,255,255,.15);border-top-color:#c8935a;border-radius:50%;animation:spin .7s linear infinite"></div><span style="color:#f0ede8;font-size:14px;font-family:DM Sans,sans-serif">Chargement...</span>';
+    document.body.appendChild(el);
+    const s=document.createElement('style');s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);
+  }
+  el.style.display=v?'flex':'none';
+}
+function showBanner(msg,color){
+  let el=g('supa-banner');
+  if(!el){el=document.createElement('div');el.id='supa-banner';el.style.cssText='position:fixed;top:0;left:0;right:0;padding:10px 20px;font-size:13px;font-weight:600;text-align:center;z-index:9998;color:#fff;cursor:pointer';el.onclick=()=>el.style.display='none';document.body.appendChild(el);}
+  el.style.background=color||'var(--ac)';el.textContent=msg;el.style.display='block';
+  setTimeout(()=>el.style.display='none',6000);
+}
+function showConfigWarning(){ showBanner('⚙️ Supabase non configuré — mode local. Allez dans Paramètres.','#555'); }
+
+function resetDB() {
+  if(!confirm('Réinitialiser les données locales ?')) return;
+  localStorage.removeItem(TENANT_ID ? KEY+'_'+TENANT_ID : KEY);
+  location.reload();
+}
 
 function initDB() {
   DB = {
-    users: [
-      { id:1, username:'admin', password:'admin123', nom:'El Alami', prenom:'Youssef', role:'admin', active:true },
-      { id:2, username:'formateur1', password:'form123', nom:'Benali', prenom:'Rachid', role:'formateur', active:true, fid:1 },
-      { id:3, username:'stagiaire1', password:'stag123', nom:'Tahiri', prenom:'Fatima', role:'stagiaire', active:true, sid:1 }
+    etab:{nom:'EduManager Pro',soustitre:'Établissement de Formation Professionnelle',adresse:'',tel:'',email:'',ice:'',logo_emoji:'🎓'},
+    users:[
+      {id:1,username:'admin',password:'admin123',nom:'El Alami',prenom:'Youssef',role:'admin',active:true},
+      {id:2,username:'formateur1',password:'form123',nom:'Benali',prenom:'Rachid',role:'formateur',active:true,fid:1},
+      {id:3,username:'stagiaire1',password:'stag123',nom:'Tahiri',prenom:'Fatima',role:'stagiaire',active:true,sid:1}
     ],
-    formateurs: [
-      { id:1, nom:'Benali', prenom:'Rachid', cin:'AB100001', type:'permanent', email:'r.benali@edu.ma', tel:'0661234567', spec:'Développement Web' },
-      { id:2, nom:'Chraibi', prenom:'Nadia', cin:'CD200002', type:'permanent', email:'n.chraibi@edu.ma', tel:'0672345678', spec:'Réseaux & Systèmes' },
-      { id:3, nom:'Idrissi', prenom:'Omar', cin:'EF300003', type:'intervenant', email:'o.idrissi@edu.ma', tel:'0683456789', spec:'Marketing Digital' }
-    ],
-    stagiaires: [
-      { id:1, nom:'Tahiri', prenom:'Fatima', cin:'AB123456', ninsc:'2025001', dinsc:'2025-09-01', anneeform:1, as:'2025-2026', ddn:'2002-05-15', email:'fatima@g.com', tel:'0611111111', gid:1, fiid:1 },
-      { id:2, nom:'Berrada', prenom:'Karim', cin:'CD789012', ninsc:'2025002', dinsc:'2025-09-01', anneeform:1, as:'2025-2026', ddn:'2001-09-22', email:'karim@g.com', tel:'0622222222', gid:1, fiid:1 },
-      { id:3, nom:'Mansouri', prenom:'Sara', cin:'EF345678', ninsc:'2025003', dinsc:'2025-09-01', anneeform:1, as:'2025-2026', ddn:'2003-01-10', email:'sara@g.com', tel:'0633333333', gid:2, fiid:2 }
-    ],
-    filieres: [
-      { id:1, nom:'Développement Digital', niv:'Technicien Spécialisé', dur:24 },
-      { id:2, nom:'Réseaux Informatiques', niv:'Technicien Spécialisé', dur:24 },
-      { id:3, nom:'Marketing Digital', niv:'Technicien', dur:12 }
-    ],
-    groupes: [
-      { id:1, nom:'DD-G1', fiid:1, cap:25 },
-      { id:2, nom:'RI-G1', fiid:2, cap:20 },
-      { id:3, nom:'MK-G1', fiid:3, cap:25 }
-    ],
-    // modules now have: pcc, pth, ppr, ppj (%), ncc, nth, npr, haspj
-    modules: [
-      { id:1, nom:'Développement Web', code:'DW101', fiid:1, coef:3, pcc:30, pth:20, ppr:30, ppj:20, ncc:2, nth:1, npr:1, haspj:1 },
-      { id:2, nom:'Base de données', code:'BD102', fiid:1, coef:2, pcc:30, pth:20, ppr:30, ppj:20, ncc:2, nth:1, npr:1, haspj:1 },
-      { id:3, nom:'Administration Réseaux', code:'AR101', fiid:2, coef:3, pcc:30, pth:20, ppr:30, ppj:20, ncc:2, nth:1, npr:1, haspj:1 },
-      { id:4, nom:'Marketing en ligne', code:'MK101', fiid:3, coef:2, pcc:40, pth:30, ppr:30, ppj:0, ncc:3, nth:1, npr:1, haspj:0 }
-    ],
-    salles: [
-      { id:1, num:'Salle 101', type:'Salle de cours', cap:30, eq:'Projecteur, Tableau' },
-      { id:2, num:'Info-Lab 1', type:'Salle informatique', cap:25, eq:'25 PCs, Réseau' },
-      { id:3, num:'Amphi A', type:'Amphi', cap:80, eq:'Sono, Projecteur HD' }
-    ],
-    // seances now have: deb (HH:MM), fin (HH:MM) instead of creneau
-    seances: [
-      { id:1, jour:0, deb:'08:30', fin:'10:30', gid:1, mid:1, fid:1, said:2 },
-      { id:2, jour:0, deb:'13:30', fin:'15:30', gid:1, mid:2, fid:2, said:1 },
-      { id:3, jour:1, deb:'08:30', fin:'10:30', gid:2, mid:3, fid:2, said:2 },
-      { id:4, jour:2, deb:'10:30', fin:'12:30', gid:3, mid:4, fid:3, said:1 },
-      { id:5, jour:3, deb:'08:30', fin:'10:30', gid:1, mid:1, fid:1, said:2 }
-    ],
-    // notes: per student per module, keyed by type: cc[], th[], pr[], pj
-    notes: [
-      { id:1, sid:1, mid:1, cc:[14,16], th:[15], pr:[13], pj:17 },
-      { id:2, sid:1, mid:2, cc:[12,14], th:[13], pr:[11], pj:15 },
-      { id:3, sid:2, mid:1, cc:[10,12], th:[11], pr:[9], pj:null },
-      { id:4, sid:2, mid:2, cc:[8,9], th:[10], pr:[8], pj:null },
-      { id:5, sid:3, mid:4, cc:[17,18,16], th:[17], pr:[16], pj:null }
-    ],
-
-    programme: [
-      { id:1, fiid:1, mid:1, annee:1, sem:1, deb:'2024-09-02', fin:'2024-09-27', contenu:'Introduction au HTML/CSS, structure des pages web, sémantique HTML5', vh:30, statut:'termine', rem:'Prérequis: aucun' },
-      { id:2, fiid:1, mid:1, annee:1, sem:2, deb:'2024-09-30', fin:'2024-10-25', contenu:'JavaScript ES6+, DOM manipulation, événements, AJAX', vh:40, statut:'encours', rem:'Évaluation CC1 prévue semaine 2' },
-      { id:3, fiid:1, mid:2, annee:1, sem:3, deb:'2024-10-28', fin:'2024-11-22', contenu:'Introduction aux bases de données relationnelles, SQL de base', vh:35, statut:'planifie', rem:'' }
-    ],
-    suivi: [
-      { id:1, gid:1, mid:1, fid:1, date:'2024-09-04', deb:'08:30', fin:'10:30', contenu:'Introduction au cours - Presentation HTML5, premiers exercices de structure', obj:'Les stagiaires comprennent la structure de base HTML', obs:'Bonne participation generale, 2 stagiaires en retard. Niveau heterogene.', next:'Approfondissement CSS, mise en forme, selecteurs', taux:90, pres:23 },
-      { id:2, gid:1, mid:1, fid:1, date:'2024-09-09', deb:'08:30', fin:'10:30', contenu:'CSS Flexbox et Grid, mise en page responsive', obj:'Maitriser les layouts modernes CSS', obs:'Difficultes sur Grid pour certains. Exercice pratique tres bien realise.', next:'Introduction JavaScript, variables, types, fonctions', taux:85, pres:24 }
-    ],
-        etab: {
-      nom: 'EduManager Pro',
-      soustitre: 'Établissement de Formation Professionnelle',
-      adresse: '',
-      tel: '',
-      email: '',
-      ice: '',
-      logo_emoji: '🎓'
-    },
-    anneesScolaires: ['2023-2024','2024-2025','2025-2026'],
-    anneeCourante: '2025-2026',
-    // Personnel administratif
-    admin_staff: [
-      { id:1, nom:'Alaoui', prenom:'Hassan', cin:'AA100001', poste:'Directeur', type:'permanent', email:'h.alaoui@edu.ma', tel:'0600000001', salaire:8000 },
-      { id:2, nom:'Benkirane', prenom:'Leila', cin:'BB200002', poste:'Secrétaire', type:'permanent', email:'l.benkirane@edu.ma', tel:'0600000002', salaire:4500 },
-      { id:3, nom:'Ziani', prenom:'Youssef', cin:'CC300003', poste:'Coordinateur pédagogique', type:'permanent', email:'y.ziani@edu.ma', tel:'0600000003', salaire:6000 }
-    ],
-    // Paiements frais stagiaires
-    paie_stag: [
-      { id:1, sid:1, as:'2025-2026', type:'mensuel', mois:'2025-09', montant:450, date_paie:'2025-09-05', mode:'especes', ref:'REC001', note:'' },
-      { id:2, sid:1, as:'2025-2026', type:'assurance', mois:'', montant:150, date_paie:'2025-09-01', mode:'virement', ref:'REC002', note:'Assurance annuelle' },
-      { id:3, sid:2, as:'2025-2026', type:'mensuel', mois:'2025-09', montant:450, date_paie:'2025-09-06', mode:'especes', ref:'REC003', note:'' }
-    ],
-    // Paiements salaires formateurs
-    paie_form: [
-      { id:1, fid:1, as:'2025-2026', mois:'2025-09', salaire:5500, cnss:550, net:4950, date_paie:'2025-09-30', mode:'virement', ref:'SAL-F001', note:'' },
-      { id:2, fid:2, as:'2025-2026', mois:'2025-09', salaire:5000, cnss:500, net:4500, date_paie:'2025-09-30', mode:'virement', ref:'SAL-F002', note:'' }
-    ],
-    // Paiements salaires personnel admin
-    paie_admin: [
-      { id:1, aid:1, as:'2025-2026', mois:'2025-09', salaire:8000, cnss:800, net:7200, date_paie:'2025-09-30', mode:'virement', ref:'SAL-A001', note:'' },
-      { id:2, aid:2, as:'2025-2026', mois:'2025-09', salaire:4500, cnss:450, net:4050, date_paie:'2025-09-30', mode:'virement', ref:'SAL-A002', note:'' }
-    ],
-    // Autres dépenses
-    depenses: [
-      { id:1, as:'2025-2026', date:'2025-09-01', categorie:'loyer', libelle:'Loyer locaux septembre', montant:12000, mode:'virement', ref:'DEP001', note:'' },
-      { id:2, as:'2025-2026', date:'2025-09-05', categorie:'achat', libelle:'Achat fournitures bureau', montant:1200, mode:'especes', ref:'DEP002', note:'Stylos, ramettes, classeurs' },
-      { id:3, as:'2025-2026', date:'2025-09-10', categorie:'electricite', libelle:'Facture électricité', montant:2300, mode:'cheque', ref:'DEP003', note:'' }
-    ],
-    nid: { users:4, formateurs:4, stagiaires:4, filieres:4, groupes:4, modules:5, salles:4, seances:6, notes:6, prog:4, suivi:3, admin_staff:4, paie_stag:4, paie_form:3, paie_admin:3, depenses:4 },
-    activity: [
-      { txt:'Stagiaire Tahiri Fatima inscrite', t:'Aujourd\'hui', col:'var(--gr)' },
-      { txt:'Module Développement Web configuré', t:'Hier', col:'var(--ac)' },
-      { txt:'Emploi du temps mis à jour', t:'Il y a 2 jours', col:'var(--bl)' }
-    ]
+    formateurs:[{id:1,nom:'Benali',prenom:'Rachid',cin:'AB100001',type:'permanent',email:'r.benali@edu.ma',tel:'0661234567',spec:'Développement Web'}],
+    stagiaires:[{id:1,nom:'Tahiri',prenom:'Fatima',cin:'AB123456',ninsc:'2025001',dinsc:'2025-09-01',anneeform:1,as:'2025-2026',ddn:'2002-05-15',email:'fatima@g.com',tel:'0611111111',gid:1,fiid:1}],
+    filieres:[{id:1,nom:'Développement Digital',niv:'Technicien Spécialisé',dur:24}],
+    groupes:[{id:1,nom:'DD-G1',fiid:1,cap:25,annee:1}],
+    modules:[{id:1,nom:'Développement Web',code:'DW101',fiid:1,coef:3,pcc:30,pth:20,ppr:30,ppj:20,ncc:2,nth:1,npr:1,haspj:1}],
+    salles:[{id:1,num:'Salle 101',type:'Salle de cours',cap:30,eq:'Projecteur'}],
+    seances:[],notes:[],programme:[],suivi:[],admin_staff:[],paie_stag:[],paie_form:[],paie_admin:[],depenses:[],
+    anneesScolaires:['2024-2025','2025-2026'],anneeCourante:'2025-2026',
+    nid:{users:4,formateurs:2,stagiaires:2,filieres:2,groupes:2,modules:2,salles:2,seances:1,notes:1,prog:1,suivi:1,admin_staff:1,paie_stag:1,paie_form:1,paie_admin:1,depenses:1},
+    activity:[]
   };
   save();
 }
 
 // ============================================================
+// AUTH// ============================================================
 // AUTH
 // ============================================================
 let CU = null;
 let edtV = 'groupe';
 
-function doLogin() {
-  const u = g('li-u').value.trim(), p = g('li-p').value;
-  const user = DB.users.find(x => x.username===u && x.password===p && x.active);
-  if (!user) { g('li-err').style.display='block'; return; }
-  CU = user;
-  g('li-err').style.display = 'none';
-  g('auth').style.display = 'none';
-  g('app').style.display = 'block';
-  setupApp();
+// Current user & superadmin session
+let SA = null; // superadmin session
+
+// ---- Tab switching ----
+function switchAuthTab(tab) {
+  const isEtab = tab==='etab';
+  g('login-etab').style.display  = isEtab ? 'block':'none';
+  g('login-super').style.display = isEtab ? 'none':'block';
+  g('tab-etab').style.background = isEtab ? 'var(--ac)':'var(--sf2)';
+  g('tab-etab').style.color      = isEtab ? '#fff':'var(--tx2)';
+  g('tab-super').style.background= isEtab ? 'var(--sf2)':'var(--pu)';
+  g('tab-super').style.color     = isEtab ? 'var(--tx2)':'#fff';
 }
-document.addEventListener('keydown', e => { if (e.key==='Enter' && g('auth').style.display!=='none') doLogin(); });
-function doLogout() { CU=null; g('app').style.display='none'; g('auth').style.display='flex'; g('li-u').value=''; g('li-p').value=''; }
+
+// ---- ÉTABLISSEMENT LOGIN ----
+async function doLogin() {
+  const u=gv('li-u').trim(), p=gv('li-p');
+  if(!u||!p) return;
+  const btn=g('btn-login');
+  if(btn){ btn.textContent='Connexion...'; btn.disabled=true; }
+  g('li-err').style.display='none';
+  try {
+    if(SUPA_URL!=='VOTRE_SUPABASE_URL') {
+      // Recherche globale via RPC login (contourne RLS — table users a politique login_lookup)
+      let userRow = null;
+      try {
+        // Essai 1 : appel RPC dédié au login (sans RLS)
+        const rpc = await fetch(SUPA_URL+'/rest/v1/rpc/login_user', {
+          method:'POST',
+          headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},
+          body: JSON.stringify({p_username: u, p_password: p})
+        });
+        if(rpc.ok){
+          const rows = await rpc.json();
+          if(rows && rows.length) userRow = rows[0];
+        }
+      } catch(e){}
+
+      // Essai 2 : requête directe (fonctionne si RLS a politique login_lookup)
+      if(!userRow){
+        const found = await fetch(SUPA_URL+'/rest/v1/users?username=eq.'+encodeURIComponent(u)+'&password=eq.'+encodeURIComponent(p)+'&active=eq.true&select=id,tenant_id,username,nom,prenom,role,fid,sid&limit=1',{
+          headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+        });
+        if(found.ok){
+          const rows = await found.json();
+          if(rows && rows.length) userRow = rows[0];
+        }
+      }
+
+      if(!userRow){
+        showLoginErr('li-err','Identifiant ou mot de passe incorrect.');
+        if(btn){btn.textContent='Se connecter';btn.disabled=false;}
+        return;
+      }
+      TENANT_ID = userRow.tenant_id;
+      await loadDB(TENANT_ID);
+      CU = DB.users.find(x=>x.id===userRow.id) || userRow;
+    } else {
+      // Mode hors-ligne — utilise cache local du tenant si disponible
+      // Cherche d'abord dans tous les caches tenants locaux
+      let foundUser = null, foundTenant = null;
+      const keys = Object.keys(localStorage).filter(k=>k.startsWith('edumgr_v3_cache_'));
+      for(const k of keys){
+        try {
+          const raw = localStorage.getItem(k);
+          const data = JSON.parse(raw||'{}');
+          const u2 = (data.users||[]).find(x=>x.username===u&&x.password===p&&x.active);
+          if(u2){ foundUser=u2; foundTenant=k.replace('edumgr_v3_cache_',''); break; }
+        } catch(e){}
+      }
+      if(foundTenant){
+        TENANT_ID = foundTenant;
+        loadDBLocal(foundTenant);
+        CU = foundUser;
+      } else {
+        // Fallback démo
+        loadDBLocal(null);
+        const user = DB.users.find(x=>x.username===u&&x.password===p&&x.active);
+        if(!user){
+          showLoginErr('li-err','Identifiant ou mot de passe incorrect.');
+          if(btn){btn.textContent='Se connecter';btn.disabled=false;}
+          return;
+        }
+        CU = user;
+      }
+    }
+    if(CU.role==='formateur'&&!CU.fid){ const f=DB.formateurs.find(x=>x.nom===CU.nom&&x.prenom===CU.prenom); if(f)CU.fid=f.id; }
+    if(CU.role==='stagiaire'&&!CU.sid){ const s=DB.stagiaires.find(x=>x.nom===CU.nom&&x.prenom===CU.prenom); if(s)CU.sid=s.id; }
+    g('auth').style.display='none';
+    g('app').style.display='block';
+    g('super-panel').style.display='none';
+    setupApp();
+  } catch(e) {
+    showLoginErr('li-err','Erreur de connexion. Vérifiez votre connexion internet.');
+    console.error(e);
+  }
+  if(btn){ btn.textContent='Se connecter'; btn.disabled=false; }
+}
+
+// ---- SUPERADMIN LOGIN ----
+async function doSuperLogin() {
+  const u=gv('sa-u').trim(), p=gv('sa-p');
+  if(!u||!p) return;
+  const btn=g('btn-super-login');
+  if(btn){ btn.textContent='Vérification...'; btn.disabled=true; }
+  g('sa-err').style.display='none';
+  try {
+    let ok=false;
+    if(SUPA_URL!=='VOTRE_SUPABASE_URL'){
+      const found=await sbReq('superadmins?username=eq.'+encodeURIComponent(u)+'&password=eq.'+encodeURIComponent(p)+'&active=eq.true&limit=1');
+      if(found.length){ SA=found[0]; ok=true; }
+    } else {
+      // Demo offline
+      if(u==='superadmin'&&p==='SuperAdmin2025!'){ SA={username:'superadmin',nom:'Administrateur',prenom:'Plateforme'}; ok=true; }
+    }
+    if(!ok){ showLoginErr('sa-err','Identifiants incorrects.'); if(btn){btn.textContent='Accéder au panneau';btn.disabled=false;} return; }
+    g('auth').style.display='none';
+    g('app').style.display='none';
+    g('super-panel').style.display='flex';
+    await loadSuperAdminData();
+    renderSuperPanel();
+  } catch(e) {
+    showLoginErr('sa-err','Erreur de connexion.');
+    console.error(e);
+  }
+  if(btn){ btn.textContent='Accéder au panneau'; btn.disabled=false; }
+}
+
+function showLoginErr(id, msg){ const el=g(id); if(el){el.textContent=msg;el.style.display='block';} }
+
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Enter') return;
+  if(g('auth').style.display!=='none'){
+    if(g('login-super').style.display!=='none') doSuperLogin(); else doLogin();
+  }
+});
+
+function doLogout() {
+  CU=null; TENANT_ID=null;
+  g('app').style.display='none';
+  g('super-panel').style.display='none';
+  g('auth').style.display='flex';
+  g('li-u').value=''; g('li-p').value='';
+  switchAuthTab('etab');
+}
+function doSuperLogout() {
+  SA=null;
+  g('super-panel').style.display='none';
+  g('auth').style.display='flex';
+  g('sa-u').value=''; g('sa-p').value='';
+  switchAuthTab('super');
+}
 
 // ============================================================
 // NAVIGATION
@@ -1008,6 +1272,7 @@ function onAnneeChange(){
       if(!DB.anneesScolaires.includes(newA)){DB.anneesScolaires.push(newA);}
       DB.anneeCourante=newA;
       save();
+      saveEtab();
       // Refresh selector
       const asel=g('annee-sel');
       asel.innerHTML=DB.anneesScolaires.map(a=>`<option value="${a}" ${a===newA?'selected':''}>${a}</option>`).join('');
@@ -2027,7 +2292,47 @@ function rParametres(){
   set('p-tel',    e.tel);
   set('p-email',  e.email);
   set('p-ice',    e.ice);
+  // Supabase config
+  const supaUrl = localStorage.getItem('supa_url')||SUPA_URL.replace('VOTRE_SUPABASE_URL','');
+  const supaKey = localStorage.getItem('supa_key')||SUPA_KEY.replace('VOTRE_SUPABASE_ANON_KEY','');
+  set('p-supa-url', supaUrl);
+  set('p-supa-key', supaKey);
+  // Show connection status
+  const st=g('supa-status');
+  if(st){
+    if(OFFLINE_MODE){
+      st.style.display='block';st.style.background='rgba(200,80,80,.15)';st.style.color='var(--rd)';
+      st.textContent='⚠️ Mode hors-ligne — données stockées localement uniquement';
+    } else {
+      st.style.display='block';st.style.background='rgba(42,122,90,.15)';st.style.color='var(--gr)';
+      st.textContent='✅ Connecté à Supabase — données synchronisées dans le cloud';
+    }
+  }
   updateParamPreview();
+}
+function saveSupaConfig(){
+  const url=(gv('p-supa-url')||'').trim();
+  const key=(gv('p-supa-key')||'').trim();
+  if(!url||!key){alert('URL et clé obligatoires');return;}
+  if(!url.startsWith('https://')){alert('URL invalide — doit commencer par https://');return;}
+  localStorage.setItem('supa_url', url);
+  localStorage.setItem('supa_key', key);
+  showAl('al-param','✅ Clés sauvegardées — rechargement en cours...');
+  setTimeout(()=>location.reload(), 1200);
+}
+async function testSupaConnection(){
+  const url=(gv('p-supa-url')||'').trim();
+  const key=(gv('p-supa-key')||'').trim();
+  const res=g('supa-test-result');
+  if(!url||!key){if(res)res.textContent='⚠️ Entrez URL et clé';return;}
+  if(res)res.textContent='Test en cours...';
+  try {
+    const r=await fetch(url+'/rest/v1/etab?limit=1',{headers:{'apikey':key,'Authorization':'Bearer '+key}});
+    if(r.ok){if(res){res.style.color='var(--gr)';res.textContent='✅ Connexion réussie !';}}
+    else{if(res){res.style.color='var(--rd)';res.textContent='❌ Erreur '+r.status+' — vérifiez vos clés';}}
+  } catch(e){
+    if(res){res.style.color='var(--rd)';res.textContent='❌ Impossible de joindre Supabase';}
+  }
 }
 function updateParamPreview(){
   const nom   = gv('p-nom')   || 'EduManager Pro';
@@ -2055,6 +2360,7 @@ function saveParametres(){
   DB.etab.email       = gv('p-email');
   DB.etab.ice         = gv('p-ice');
   save();
+  saveEtab();
   // Update all live DOM references
   syncEtabName();
   showAl('al-param', '✅ Paramètres sauvegardés !');
@@ -2979,6 +3285,499 @@ document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.
 
 // ============================================================
 loadDB();
+
+
+// ============================================================
+// SUPER ADMIN PANEL JS
+// ============================================================
+
+function spTab(btn, tabId) {
+  document.querySelectorAll('.sp-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['sp-dashboard','sp-etablissements','sp-abonnements','sp-config'].forEach(id=>{
+    const el=g(id); if(el) el.style.display = id===tabId ? 'block':'none';
+  });
+  if(tabId==='sp-dashboard')      renderSpDashboard();
+  if(tabId==='sp-etablissements') renderSpEtabs();
+  if(tabId==='sp-abonnements')    renderSpAbons();
+  if(tabId==='sp-config')         renderSpConfig();
+}
+
+async function renderSuperPanel() {
+  // Update badge
+  if(SA && g('sa-name-badge')) g('sa-name-badge').textContent='⚡ '+((SA.prenom||'')+' '+(SA.nom||'')).trim();
+  renderSpDashboard();
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────
+function renderSpDashboard() {
+  const el=g('sp-dashboard'); if(!el) return;
+  const T=SUPER_DATA.tenants||[];
+  const A=SUPER_DATA.abons||[];
+  const C=SUPER_DATA.counts||{};
+  const actifs   = T.filter(t=>t.statut==='actif').length;
+  const suspendus= T.filter(t=>t.statut==='suspendu').length;
+  const expires  = T.filter(t=>t.statut==='expire').length;
+  const totalStags= Object.values(C).reduce((s,c)=>s+(c.stags||0),0);
+  const totalForms= Object.values(C).reduce((s,c)=>s+(c.forms||0),0);
+  const revMois  = A.filter(a=>{ const d=a.date_debut||''; return d.startsWith(new Date().toISOString().slice(0,7)); }).reduce((s,a)=>s+(a.montant||0),0);
+  const revTotal = A.reduce((s,a)=>s+(a.montant||0),0);
+
+  // Recent activity
+  const recent = [...T].sort((a,b)=>new Date(b.date_creation)-new Date(a.date_creation)).slice(0,5);
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:22px">Tableau de bord</h2>
+        <div style="font-size:12px;color:var(--tx3);margin-top:3px">${new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="openCreateEtab()">➕ Nouvel établissement</button>
+    </div>
+
+    <!-- STATS ROW -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px">
+      <div class="sp-stat"><div class="sp-stat-v" style="color:var(--ac)">${T.length}</div><div class="sp-stat-l">Établissements</div></div>
+      <div class="sp-stat"><div class="sp-stat-v" style="color:var(--gr)">${actifs}</div><div class="sp-stat-l">Actifs</div></div>
+      <div class="sp-stat"><div class="sp-stat-v" style="color:var(--rd)">${suspendus}</div><div class="sp-stat-l">Suspendus</div></div>
+      <div class="sp-stat"><div class="sp-stat-v" style="color:var(--bl)">${totalStags}</div><div class="sp-stat-l">Total stagiaires</div></div>
+      <div class="sp-stat"><div class="sp-stat-v" style="color:var(--pu)">${totalForms}</div><div class="sp-stat-l">Total formateurs</div></div>
+      <div class="sp-stat"><div class="sp-stat-v" style="color:var(--gr)">${FMT_MAD(revTotal)}</div><div class="sp-stat-l">Revenus totaux</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <!-- ÉTABLISSEMENTS RÉCENTS -->
+      <div class="sp-card">
+        <div style="font-weight:600;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+          🏫 Établissements récents
+          <button class="btn btn-s btn-sm" onclick="spTab(document.querySelector('[data-tab=sp-etablissements]'),'sp-etablissements')">Voir tout</button>
+        </div>
+        ${recent.length ? recent.map(t=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--acd);display:flex;align-items:center;justify-content:center;font-size:16px">${t.logo_emoji||'🎓'}</div>
+              <div>
+                <div style="font-size:13px;font-weight:500">${t.nom}</div>
+                <div style="font-size:11px;color:var(--tx3)">${t.ville||''} · ${t.id}</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              <span class="pill pill-${t.statut}">${t.statut}</span>
+              <span class="pill pill-${t.plan}">${t.plan}</span>
+            </div>
+          </div>`).join('') : '<div style="color:var(--tx3);font-size:13px;padding:20px 0;text-align:center">Aucun établissement</div>'}
+      </div>
+
+      <!-- ABONNEMENTS RÉCENTS -->
+      <div class="sp-card">
+        <div style="font-weight:600;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+          💳 Paiements récents
+          <button class="btn btn-s btn-sm" onclick="spTab(document.querySelector('[data-tab=sp-abonnements]'),'sp-abonnements')">Voir tout</button>
+        </div>
+        ${A.length ? [...A].slice(0,6).map(a=>{
+          const t=T.find(x=>x.id===a.tenant_id)||{};
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)">
+            <div>
+              <div style="font-size:13px;font-weight:500">${t.nom||a.tenant_id}</div>
+              <div style="font-size:11px;color:var(--tx3)">${a.date_debut||''} · ${a.plan||''}</div>
+            </div>
+            <div style="font-weight:700;color:var(--gr)">${FMT_MAD(a.montant||0)}</div>
+          </div>`;
+        }).join('') : '<div style="color:var(--tx3);font-size:13px;padding:20px 0;text-align:center">Aucun paiement</div>'}
+      </div>
+    </div>
+
+    <!-- UTILISATION PAR ÉTABLISSEMENT -->
+    ${T.length ? `
+    <div class="sp-card" style="margin-top:16px">
+      <div style="font-weight:600;margin-bottom:14px">📈 Utilisation par établissement</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.06em">
+            <th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd)">Établissement</th>
+            <th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd)">Plan</th>
+            <th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd)">Statut</th>
+            <th style="text-align:right;padding:8px 10px;border-bottom:1px solid var(--bd)">Stagiaires</th>
+            <th style="text-align:right;padding:8px 10px;border-bottom:1px solid var(--bd)">Formateurs</th>
+            <th style="text-align:right;padding:8px 10px;border-bottom:1px solid var(--bd)">Max stag.</th>
+            <th style="text-align:center;padding:8px 10px;border-bottom:1px solid var(--bd)">Actions</th>
+          </tr></thead>
+          <tbody>
+          ${T.map(t=>{
+            const c=C[t.id]||{stags:0,forms:0};
+            const pct=Math.round((c.stags/(t.nb_stagiaires_max||200))*100);
+            const bar=`<div style="width:80px;height:6px;background:var(--bd2);border-radius:3px;display:inline-block;vertical-align:middle;margin-left:6px"><div style="width:${Math.min(pct,100)}%;height:100%;background:${pct>80?'var(--rd)':pct>50?'var(--ac)':'var(--gr)'};border-radius:3px"></div></div>`;
+            return `<tr style="border-bottom:1px solid var(--bd)">
+              <td style="padding:10px"><div style="font-weight:500">${t.nom}</div><div style="font-size:11px;color:var(--tx3)">${t.id}</div></td>
+              <td style="padding:10px"><span class="pill pill-${t.plan}">${t.plan}</span></td>
+              <td style="padding:10px"><span class="pill pill-${t.statut}">${t.statut}</span></td>
+              <td style="padding:10px;text-align:right">${c.stags} ${bar}</td>
+              <td style="padding:10px;text-align:right">${c.forms}</td>
+              <td style="padding:10px;text-align:right;color:var(--tx3)">${t.nb_stagiaires_max||200}</td>
+              <td style="padding:10px;text-align:center"><button class="btn btn-s btn-sm" onclick="editEtab('${t.id}')">✏️</button></td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>` : ''}
+  `;
+}
+
+// ── ÉTABLISSEMENTS ──────────────────────────────────────────
+function renderSpEtabs() {
+  const el=g('sp-etablissements'); if(!el) return;
+  const T=SUPER_DATA.tenants||[];
+  const C=SUPER_DATA.counts||{};
+  const q=g('sp-etab-search')?g('sp-etab-search').value.toLowerCase():'';
+  const filtered=T.filter(t=>!q||t.nom.toLowerCase().includes(q)||t.id.toLowerCase().includes(q)||(t.ville||'').toLowerCase().includes(q));
+
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h2 style="font-family:'Playfair Display',serif;font-size:22px">🏫 Établissements (${T.length})</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="sp-etab-search" placeholder="🔍 Rechercher..." style="background:var(--sf2);border:1px solid var(--bd);border-radius:var(--rs);padding:8px 12px;color:var(--tx);font-size:13px;width:200px" oninput="renderSpEtabs()" value="${q}">
+        <button class="btn btn-p btn-sm" onclick="openCreateEtab()">➕ Nouvel établissement</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+    ${filtered.length ? filtered.map(t=>{
+      const c=C[t.id]||{stags:0,forms:0};
+      const A=SUPER_DATA.abons||[];
+      const lastPay=A.filter(a=>a.tenant_id===t.id).sort((a,b)=>new Date(b.date_debut)-new Date(a.date_debut))[0];
+      return `
+      <div class="etab-card">
+        <div class="etab-avatar">${t.logo_emoji||'🎓'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-weight:600;font-size:15px">${t.nom}</span>
+            <span class="pill pill-${t.statut}">${t.statut}</span>
+            <span class="pill pill-${t.plan}">${t.plan}</span>
+          </div>
+          <div style="font-size:12px;color:var(--tx3);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap">
+            <span>🆔 ${t.id}</span>
+            ${t.ville?`<span>📍 ${t.ville}</span>`:''}
+            ${t.tel?`<span>📞 ${t.tel}</span>`:''}
+            ${t.email?`<span>✉️ ${t.email}</span>`:''}
+            <span>👩‍🎓 ${c.stags} stagiaires</span>
+            <span>👨‍🏫 ${c.forms} formateurs</span>
+            ${t.date_expiration?`<span style="color:${new Date(t.date_expiration)<new Date()?'var(--rd)':'var(--tx3)'}">📅 Expire: ${t.date_expiration}</span>`:''}
+          </div>
+          ${lastPay?`<div style="font-size:11px;color:var(--tx3);margin-top:3px">Dernier paiement: ${FMT_MAD(lastPay.montant)} le ${lastPay.date_debut||''}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="btn btn-p btn-sm" onclick="editEtab('${t.id}')">✏️ Modifier</button>
+          <button class="btn btn-s btn-sm" onclick="addAbonnement('${t.id}')">💳 Paiement</button>
+          ${t.statut==='actif'
+            ?`<button class="btn btn-sm" style="background:var(--rdd);color:var(--rd);border-color:var(--rd)" onclick="toggleEtabStatut('${t.id}','suspendu')">🚫 Suspendre</button>`
+            :`<button class="btn btn-sm" style="background:var(--grd);color:var(--gr);border-color:var(--gr)" onclick="toggleEtabStatut('${t.id}','actif')">✅ Réactiver</button>`
+          }
+        </div>
+      </div>`;
+    }).join('') : `<div style="text-align:center;padding:60px;color:var(--tx3)">Aucun établissement trouvé</div>`}
+    </div>
+  `;
+}
+
+// ── ABONNEMENTS ──────────────────────────────────────────────
+function renderSpAbons() {
+  const el=g('sp-abonnements'); if(!el) return;
+  const A=SUPER_DATA.abons||[];
+  const T=SUPER_DATA.tenants||[];
+  const total=A.reduce((s,a)=>s+(a.montant||0),0);
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h2 style="font-family:'Playfair Display',serif;font-size:22px">💳 Abonnements & Paiements</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-p btn-sm" onclick="addAbonnement(null)">➕ Nouveau paiement</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
+      <div class="sp-stat"><div class="sp-stat-v" style="color:var(--gr)">${FMT_MAD(total)}</div><div class="sp-stat-l">Revenus totaux</div></div>
+      <div class="sp-stat"><div class="sp-stat-v">${A.length}</div><div class="sp-stat-l">Paiements</div></div>
+      <div class="sp-stat"><div class="sp-stat-v" style="color:var(--bl)">${A.filter(a=>a.statut==='actif').length}</div><div class="sp-stat-l">Actifs</div></div>
+    </div>
+    <div class="sp-card">
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="color:var(--tx3);font-size:11px;text-transform:uppercase;letter-spacing:.06em">
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd)">Établissement</th>
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd)">Plan</th>
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd)">Période</th>
+            <th style="text-align:right;padding:8px 12px;border-bottom:1px solid var(--bd)">Montant</th>
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd)">Mode</th>
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd)">Statut</th>
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd)">Réf</th>
+            <th style="text-align:center;padding:8px 12px;border-bottom:1px solid var(--bd)">Actions</th>
+          </tr></thead>
+          <tbody>
+          ${A.length ? A.map(a=>{
+            const t=T.find(x=>x.id===a.tenant_id)||{};
+            return `<tr style="border-bottom:1px solid var(--bd)">
+              <td style="padding:10px 12px"><div style="font-weight:500">${t.nom||a.tenant_id}</div></td>
+              <td style="padding:10px 12px"><span class="pill pill-${a.plan||'standard'}">${a.plan||'—'}</span></td>
+              <td style="padding:10px 12px;color:var(--tx3)">${a.date_debut||''} → ${a.date_fin||''}</td>
+              <td style="padding:10px 12px;text-align:right;font-weight:600;color:var(--gr)">${FMT_MAD(a.montant||0)}</td>
+              <td style="padding:10px 12px;color:var(--tx3)">${a.mode||''}</td>
+              <td style="padding:10px 12px"><span class="pill pill-${a.statut||'actif'}">${a.statut||'actif'}</span></td>
+              <td style="padding:10px 12px;color:var(--tx3);font-size:11px">${a.ref||''}</td>
+              <td style="padding:10px 12px;text-align:center">
+                <button class="btn btn-s btn-sm" onclick="deleteAbon(${a.id})">🗑</button>
+              </td>
+            </tr>`;
+          }).join('') : '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--tx3)">Aucun paiement enregistré</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ── CONFIGURATION PLATEFORME ───────────────────────────────
+function renderSpConfig() {
+  const el=g('sp-config'); if(!el) return;
+  el.innerHTML=`
+    <div style="max-width:600px">
+      <h2 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px">⚙️ Configuration Plateforme</h2>
+      <div class="sp-card" style="margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:14px">☁️ Connexion Supabase</div>
+        <div style="background:var(--acd);border:1px solid rgba(200,147,90,.3);border-radius:6px;padding:12px;font-size:12px;color:var(--tx2);margin-bottom:14px">
+          Clés Supabase depuis <strong>supabase.com → Settings → API</strong>
+        </div>
+        <div class="fg"><label>Project URL</label><input id="sp-supa-url" placeholder="https://xxxx.supabase.co" value="${localStorage.getItem('supa_url')||''}" style="font-family:'JetBrains Mono',monospace;font-size:12px"></div>
+        <div class="fg"><label>Anon / Public Key</label><input id="sp-supa-key" placeholder="eyJ..." value="${localStorage.getItem('supa_key')||''}" style="font-family:'JetBrains Mono',monospace;font-size:11px"></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-p btn-sm" onclick="saveSupaConfigSA()">💾 Sauvegarder</button>
+          <button class="btn btn-s btn-sm" onclick="testSupaConnectionSA()">🔌 Tester</button>
+          <span id="sp-test-res" style="font-size:12px;line-height:32px"></span>
+        </div>
+      </div>
+      <div class="sp-card">
+        <div style="font-weight:600;margin-bottom:14px">🔐 Changer mot de passe super-admin</div>
+        <div class="fg"><label>Nouveau mot de passe</label><input type="password" id="sp-new-pwd" placeholder="Nouveau mot de passe"></div>
+        <div class="fg"><label>Confirmer</label><input type="password" id="sp-confirm-pwd" placeholder="Confirmer"></div>
+        <button class="btn btn-p btn-sm" style="margin-top:8px" onclick="changeSAPwd()">🔒 Mettre à jour</button>
+        <div id="sp-pwd-msg" style="margin-top:8px;font-size:12px;display:none"></div>
+      </div>
+    </div>
+  `;
+}
+
+function saveSupaConfigSA(){
+  const url=(g('sp-supa-url').value||'').trim(), key=(g('sp-supa-key').value||'').trim();
+  if(!url||!key){alert('URL et clé requises');return;}
+  localStorage.setItem('supa_url',url); localStorage.setItem('supa_key',key);
+  showBanner('✅ Configuration sauvegardée — rechargement...','var(--gr)');
+  setTimeout(()=>location.reload(),1200);
+}
+async function testSupaConnectionSA(){
+  const url=(g('sp-supa-url').value||'').trim(), key=(g('sp-supa-key').value||'').trim();
+  const res=g('sp-test-res');
+  if(!url||!key){res.textContent='⚠️ Entrez URL et clé';return;}
+  res.textContent='Test...';
+  try{
+    const r=await fetch(url+'/rest/v1/tenants?limit=1',{headers:{'apikey':key,'Authorization':'Bearer '+key}});
+    res.style.color=r.ok?'var(--gr)':'var(--rd)';
+    res.textContent=r.ok?'✅ Connexion OK !':'❌ Erreur '+r.status;
+  }catch(e){res.style.color='var(--rd)';res.textContent='❌ Inaccessible';}
+}
+async function changeSAPwd(){
+  const p=g('sp-new-pwd').value, c=g('sp-confirm-pwd').value, msg=g('sp-pwd-msg');
+  if(p!==c){msg.textContent='❌ Les mots de passe ne correspondent pas';msg.style.color='var(--rd)';msg.style.display='block';return;}
+  if(p.length<8){msg.textContent='❌ Minimum 8 caractères';msg.style.color='var(--rd)';msg.style.display='block';return;}
+  try{
+    if(SUPA_URL!=='VOTRE_SUPABASE_URL' && SA){
+      await sbReq('superadmins?id=eq.'+SA.id,{method:'PATCH',body:JSON.stringify({password:p})});
+    }
+    msg.textContent='✅ Mot de passe mis à jour';msg.style.color='var(--gr)';msg.style.display='block';
+    g('sp-new-pwd').value=''; g('sp-confirm-pwd').value='';
+  }catch(e){msg.textContent='❌ Erreur: '+e.message;msg.style.color='var(--rd)';msg.style.display='block';}
+}
+
+// ── MODALS ───────────────────────────────────────────────────
+function openCreateEtab(prefill) {
+  const isEdit = prefill && prefill.id;
+  const t = prefill || {};
+  showModal(`
+    <h3 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px">${isEdit?'✏️ Modifier':'➕ Nouvel'} établissement</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg" style="grid-column:1/-1"><label>ID unique (code court, sans espaces) *</label><input id="m-etab-id" placeholder="ex: fmcp-rabat, itp-sale" value="${t.id||''}" ${isEdit?'disabled':''}></div>
+      <div class="fg" style="grid-column:1/-1"><label>Nom complet de l'établissement *</label><input id="m-etab-nom" placeholder="ex: Institut Technique Privé Al Amal" value="${t.nom||''}"></div>
+      <div class="fg"><label>Ville</label><input id="m-etab-ville" placeholder="Rabat" value="${t.ville||''}"></div>
+      <div class="fg"><label>Téléphone</label><input id="m-etab-tel" placeholder="0537..." value="${t.tel||''}"></div>
+      <div class="fg"><label>Email</label><input id="m-etab-email" placeholder="contact@..." value="${t.email||''}"></div>
+      <div class="fg"><label>Plan</label>
+        <select id="m-etab-plan">
+          ${['trial','standard','premium'].map(p=>`<option value="${p}" ${t.plan===p?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Date expiration</label><input type="date" id="m-etab-exp" value="${t.date_expiration||''}"></div>
+      <div class="fg"><label>Max stagiaires</label><input type="number" id="m-etab-max" value="${t.nb_stagiaires_max||200}"></div>
+      ${!isEdit?`
+      <div class="fg" style="grid-column:1/-1"><label>Login admin établissement *</label><input id="m-admin-login" placeholder="ex: admin.etab" value="admin"></div>
+      <div class="fg"><label>Mot de passe admin *</label><input id="m-admin-pwd" placeholder="Mot de passe" value="admin123"></div>
+      <div class="fg"><label>Nom admin</label><input id="m-admin-nom" placeholder="Nom" value="Administrateur"></div>
+      `:'' }
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-p" onclick="${isEdit?`saveEditEtab('${t.id}')`:'saveCreateEtab()'}">${isEdit?'💾 Sauvegarder':'✅ Créer l\'établissement'}</button>
+      <button class="btn btn-s" onclick="closeModal()">Annuler</button>
+    </div>
+    <div id="m-etab-err" class="err" style="display:none;margin-top:8px"></div>
+  `);
+}
+
+function editEtab(id) {
+  const t=(SUPER_DATA.tenants||[]).find(x=>x.id===id);
+  if(!t){showBanner('Établissement introuvable','var(--rd)');return;}
+  openCreateEtab(t);
+}
+
+async function saveCreateEtab() {
+  const id=(gv('m-etab-id')||'').trim().toLowerCase().replace(/\s+/g,'-');
+  const nom=(gv('m-etab-nom')||'').trim();
+  const login=(gv('m-admin-login')||'').trim();
+  const pwd=(gv('m-admin-pwd')||'').trim();
+  if(!id||!nom||!login||!pwd){ const e=g('m-etab-err'); if(e){e.textContent='Champs obligatoires manquants';e.style.display='block';} return; }
+  if((SUPER_DATA.tenants||[]).find(t=>t.id===id)){ const e=g('m-etab-err'); if(e){e.textContent='Cet ID existe déjà';e.style.display='block';} return; }
+  try {
+    const data = {
+      id, nom, ville:gv('m-etab-ville')||'', tel:gv('m-etab-tel')||'', email:gv('m-etab-email')||'',
+      plan:gv('m-etab-plan')||'standard', date_expiration:gv('m-etab-exp')||null,
+      nb_max:parseInt(gv('m-etab-max'))||200,
+      admin_login:login, admin_password:pwd,
+      admin_nom:gv('m-admin-nom')||'Administrateur', admin_prenom:''
+    };
+    await createTenant(data);
+    if(!SUPER_DATA.tenants) SUPER_DATA.tenants=[];
+    if(!SUPER_DATA.tenants.find(t=>t.id===id)){
+      SUPER_DATA.tenants.unshift({id,nom:data.nom,ville:data.ville,tel:data.tel,email:data.email,plan:data.plan,statut:'actif',date_expiration:data.date_expiration,nb_stagiaires_max:data.nb_max,logo_emoji:'🎓',date_creation:new Date().toISOString()});
+    }
+    closeModal();
+    showBanner('✅ Établissement '+nom+' créé !','var(--gr)');
+    renderSpEtabs();
+    renderSpDashboard();
+  } catch(e) {
+    const err=g('m-etab-err'); if(err){err.textContent='Erreur: '+e.message;err.style.display='block';}
+  }
+}
+
+async function saveEditEtab(id) {
+  const t=(SUPER_DATA.tenants||[]).find(x=>x.id===id);
+  if(!t) return;
+  t.nom=gv('m-etab-nom')||t.nom;
+  t.ville=gv('m-etab-ville')||'';
+  t.tel=gv('m-etab-tel')||'';
+  t.email=gv('m-etab-email')||'';
+  t.plan=gv('m-etab-plan')||t.plan;
+  t.date_expiration=gv('m-etab-exp')||null;
+  t.nb_stagiaires_max=parseInt(gv('m-etab-max'))||200;
+  try {
+    if(SUPA_URL!=='VOTRE_SUPABASE_URL'){
+      await sbReq('tenants?id=eq.'+id,{method:'PATCH',body:JSON.stringify({nom:t.nom,ville:t.ville,tel:t.tel,email:t.email,plan:t.plan,date_expiration:t.date_expiration,nb_stagiaires_max:t.nb_stagiaires_max})});
+    }
+    localStorage.setItem('super_data',JSON.stringify(SUPER_DATA));
+    closeModal();
+    showBanner('✅ Établissement mis à jour','var(--gr)');
+    renderSpEtabs(); renderSpDashboard();
+  } catch(e){ const err=g('m-etab-err'); if(err){err.textContent='Erreur: '+e.message;err.style.display='block';} }
+}
+
+async function toggleEtabStatut(id, newStatut) {
+  const t=(SUPER_DATA.tenants||[]).find(x=>x.id===id);
+  if(!t||!confirm(`${newStatut==='suspendu'?'Suspendre':'Réactiver'} l'établissement "${t.nom}" ?`)) return;
+  t.statut=newStatut;
+  try {
+    if(SUPA_URL!=='VOTRE_SUPABASE_URL') await sbReq('tenants?id=eq.'+id,{method:'PATCH',body:JSON.stringify({statut:newStatut})});
+    localStorage.setItem('super_data',JSON.stringify(SUPER_DATA));
+    showBanner((newStatut==='suspendu'?'🚫 Suspendu: ':'✅ Réactivé: ')+t.nom, newStatut==='suspendu'?'var(--rd)':'var(--gr)');
+    renderSpEtabs(); renderSpDashboard();
+  } catch(e){ showBanner('Erreur: '+e.message,'var(--rd)'); t.statut = newStatut==='suspendu'?'actif':'suspendu'; }
+}
+
+function addAbonnement(tenantId) {
+  const T=SUPER_DATA.tenants||[];
+  showModal(`
+    <h3 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px">💳 Nouveau paiement</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg" style="grid-column:1/-1"><label>Établissement</label>
+        <select id="m-abon-tid">
+          ${T.map(t=>`<option value="${t.id}" ${t.id===tenantId?'selected':''}>${t.nom}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Plan</label>
+        <select id="m-abon-plan">
+          ${['trial','standard','premium'].map(p=>`<option value="${p}">${p}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Montant (DH)</label><input type="number" id="m-abon-mnt" value="0"></div>
+      <div class="fg"><label>Date début</label><input type="date" id="m-abon-deb" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="fg"><label>Date fin</label><input type="date" id="m-abon-fin"></div>
+      <div class="fg"><label>Mode de paiement</label>
+        <select id="m-abon-mode">
+          ${['virement','chèque','espèces','carte'].map(m=>`<option>${m}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Référence</label><input id="m-abon-ref" placeholder="N° reçu..."></div>
+      <div class="fg" style="grid-column:1/-1"><label>Note</label><input id="m-abon-note" placeholder="..."></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-p" onclick="saveAbon()">💾 Enregistrer</button>
+      <button class="btn btn-s" onclick="closeModal()">Annuler</button>
+    </div>
+  `);
+}
+
+async function saveAbon() {
+  const abon = {
+    tenant_id:gv('m-abon-tid'), plan:gv('m-abon-plan'),
+    montant:parseFloat(gv('m-abon-mnt'))||0,
+    date_debut:gv('m-abon-deb'), date_fin:gv('m-abon-fin'),
+    mode:gv('m-abon-mode'), ref:gv('m-abon-ref'), note:gv('m-abon-note'),
+    statut:'actif', created_at:new Date().toISOString()
+  };
+  try {
+    if(SUPA_URL!=='VOTRE_SUPABASE_URL'){
+      const res=await sbPost('abonnements',abon);
+      if(res[0]) abon.id=res[0].id;
+      // Update tenant plan & expiration
+      await sbReq('tenants?id=eq.'+abon.tenant_id,{method:'PATCH',body:JSON.stringify({plan:abon.plan,date_expiration:abon.date_fin})});
+    } else {
+      abon.id = Date.now();
+    }
+    if(!SUPER_DATA.abons) SUPER_DATA.abons=[];
+    SUPER_DATA.abons.unshift(abon);
+    const t=(SUPER_DATA.tenants||[]).find(x=>x.id===abon.tenant_id);
+    if(t){t.plan=abon.plan;t.date_expiration=abon.date_fin;}
+    localStorage.setItem('super_data',JSON.stringify(SUPER_DATA));
+    closeModal();
+    showBanner('✅ Paiement enregistré: '+FMT_MAD(abon.montant),'var(--gr)');
+    renderSpAbons(); renderSpDashboard();
+  } catch(e){ showBanner('Erreur: '+e.message,'var(--rd)'); }
+}
+
+async function deleteAbon(id) {
+  if(!confirm('Supprimer ce paiement ?')) return;
+  SUPER_DATA.abons=(SUPER_DATA.abons||[]).filter(a=>a.id!==id);
+  if(SUPA_URL!=='VOTRE_SUPABASE_URL') { try{ await sbReq('abonnements?id=eq.'+id,{method:'DELETE',h:{'Prefer':'return=minimal'}}); }catch(e){} }
+  localStorage.setItem('super_data',JSON.stringify(SUPER_DATA));
+  renderSpAbons();
+}
+
+// ── MODAL HELPER ─────────────────────────────────────────────
+function showModal(html) {
+  let overlay=g('sp-modal-overlay');
+  if(!overlay){
+    overlay=document.createElement('div');overlay.id='sp-modal-overlay';
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px';
+    overlay.onclick=e=>{if(e.target===overlay)closeModal();};
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto">${html}</div>`;
+  overlay.style.display='flex';
+}
+function closeModal(){ const el=g('sp-modal-overlay'); if(el) el.style.display='none'; }
+
 </script>
 
 
@@ -3120,6 +3919,64 @@ loadDB();
     <div class="md-foot"><button class="btn btn-s btn-sm" onclick="closeMod('mod-suivi')">Annuler</button><button class="btn btn-p btn-sm" onclick="saveSuivi()">Enregistrer</button></div>
   </div>
 </div>
+
+
+<!-- ============================================================ -->
+<!-- SUPER ADMIN PANEL -->
+<!-- ============================================================ -->
+<div id="super-panel" style="display:none;flex-direction:column;min-height:100vh;background:var(--bg)">
+
+  <!-- TOPBAR -->
+  <div style="background:var(--sf);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:20px">⚡</span>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--pu)">EduManager Pro</div>
+        <div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em">Super Administration Plateforme</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="background:var(--pud);border:1px solid rgba(154,90,200,.3);border-radius:var(--rs);padding:6px 14px;font-size:12px;color:var(--pu)" id="sa-name-badge">⚡ Super Admin</div>
+      <button onclick="doSuperLogout()" style="background:var(--sf2);border:1px solid var(--bd);color:var(--tx2);padding:7px 14px;border-radius:var(--rs);font-size:12px;cursor:pointer">⎋ Déconnexion</button>
+    </div>
+  </div>
+
+  <!-- SUBNAV -->
+  <div style="background:var(--sf);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;gap:4px">
+    <button class="sp-tab active" data-tab="sp-dashboard"    onclick="spTab(this,'sp-dashboard')">📊 Tableau de bord</button>
+    <button class="sp-tab"        data-tab="sp-etablissements" onclick="spTab(this,'sp-etablissements')">🏫 Établissements</button>
+    <button class="sp-tab"        data-tab="sp-abonnements"  onclick="spTab(this,'sp-abonnements')">💳 Abonnements</button>
+    <button class="sp-tab"        data-tab="sp-config"       onclick="spTab(this,'sp-config')">⚙️ Configuration</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div style="flex:1;overflow-y:auto;padding:24px" id="sp-content">
+    <div id="sp-dashboard"></div>
+    <div id="sp-etablissements" style="display:none"></div>
+    <div id="sp-abonnements"    style="display:none"></div>
+    <div id="sp-config"         style="display:none"></div>
+  </div>
+</div>
+
+<style>
+.sp-tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--tx2);padding:12px 16px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.sp-tab:hover{color:var(--tx);border-bottom-color:var(--bd2)}
+.sp-tab.active{color:var(--pu);border-bottom-color:var(--pu)}
+.sp-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px}
+.sp-stat{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:16px 20px;display:flex;flex-direction:column;gap:6px}
+.sp-stat-v{font-size:32px;font-weight:700;font-family:'Playfair Display',serif}
+.sp-stat-l{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em}
+.etab-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;gap:16px;transition:border-color .2s}
+.etab-card:hover{border-color:var(--bd2)}
+.etab-avatar{width:46px;height:46px;border-radius:10px;background:var(--acd);border:1px solid rgba(200,147,90,.3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.pill-actif{background:var(--grd);color:var(--gr)}
+.pill-suspendu{background:var(--rdd);color:var(--rd)}
+.pill-expire{background:var(--sf3);color:var(--tx3)}
+.pill-trial{background:var(--bld);color:var(--bl)}
+.pill-standard{background:var(--acd);color:var(--ac)}
+.pill-premium{background:var(--pud);color:var(--pu)}
+</style>
 
 </body>
 </html>
