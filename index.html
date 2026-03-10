@@ -984,7 +984,7 @@ async function loadDB(tenantId) {
     DB.formateurs   = rows[2];
     DB.filieres     = rows[3];
     DB.groupes      = rows[4];
-    DB.stagiaires   = rows[5].map(s=>({...s,as:s.as_annee}));
+    DB.stagiaires   = rows[5].map(s=>({...s,as:s.as||s.as_annee}));
     DB.modules      = rows[6];
     DB.salles       = rows[7];
     DB.seances      = rows[8];
@@ -997,7 +997,22 @@ async function loadDB(tenantId) {
     DB.depenses     = rows[15].map(d=>({...d,as:d.as_annee}));
     const actRaw = localStorage.getItem('act_'+tenantId);
     DB.activity     = JSON.parse(actRaw||'[]');
-    DB.nid = {};
+    // Calcul des IDs max pour les nouveaux enregistrements
+    const maxId = (arr) => arr.length ? Math.max(...arr.map(x=>parseInt(x.id)||0)) + 1 : 1;
+    DB.nid = {
+      users:       maxId(DB.users),
+      admin_staff: maxId(DB.admin_staff),
+      formateurs:  maxId(DB.formateurs),
+      filieres:    maxId(DB.filieres),
+      groupes:     maxId(DB.groupes),
+      stagiaires:  maxId(DB.stagiaires),
+      modules:     maxId(DB.modules),
+      salles:      maxId(DB.salles),
+      seances:     maxId(DB.seances),
+      notes:       maxId(DB.notes),
+      prog:        maxId(DB.programme),
+      suivi:       maxId(DB.suivi),
+    };
     localStorage.setItem(KEY+'_'+tenantId, JSON.stringify(DB));
     showLoading(false);
   } catch(err) {
@@ -1652,23 +1667,28 @@ function openEditStag(id){
 }
 async function saveStag(){
   const id=gv('s-id');
+  const asVal = g('s-as').value||DB.anneeCourante;
   const d={
     nom:gv('s-nom'),prenom:gv('s-pre'),cin:gv('s-cin'),ninsc:gv('s-ninsc'),
     ddn:gv('s-ddn')||null,dinsc:gv('s-dinsc')||null,anneeform:parseInt(g('s-anneeform').value)||1,
-    as:g('s-as').value||DB.anneeCourante,
+    as:asVal, // pour DB locale
     email:gv('s-email'),tel:gv('s-tel'),
     gid:parseInt(g('s-grp').value)||null,fiid:parseInt(g('s-fi').value)||null
   };
-  if(!d.nom) return;
+  if(!d.nom){showAl('al-stag','⚠️ Le nom est obligatoire','var(--rd)');return;}
+  // Supabase data (may use different col name depending on schema)
+  const dSupa={...d};
   try {
     if(SUPA_KEY&&SUPA_KEY.length>=20){
       if(id){
-        await getSupa().from('stagiaires').update(d).eq('id',parseInt(id)).eq('tenant_id',TENANT_ID);
+        const {error}=await getSupa().from('stagiaires').update(dSupa).eq('id',parseInt(id)).eq('tenant_id',TENANT_ID);
+        if(error) throw error;
         const s=DB.stagiaires.find(x=>x.id==id);if(s)Object.assign(s,d);
       } else {
-        const {data,error}=await getSupa().from('stagiaires').insert({...d,tenant_id:TENANT_ID}).select();
+        const {data,error}=await getSupa().from('stagiaires').insert({...dSupa,tenant_id:TENANT_ID}).select();
         if(error) throw error;
-        if(data&&data[0]){d.id=data[0].id;DB.stagiaires.push({...d,...data[0]});}
+        const row=data&&data[0]?{...d,...data[0],as:asVal}:{...d,id:DB.nid.stagiaires++};
+        DB.stagiaires.push(row);
         addAct(`Stagiaire ${d.prenom} ${d.nom} inscrit(e)`,'var(--gr)');
       }
     } else {
@@ -2502,19 +2522,39 @@ function openEditProg(id){
   sv('pr-deb',p.deb);sv('pr-fin',p.fin);sv('pr-contenu',p.contenu);sv('pr-vh',p.vh);setSel('pr-statut',p.statut);sv('pr-rem',p.rem);
   openMod('mod-prog');
 }
-function saveProg(){
-  g('pr-fi').innerHTML='<option value="">--</option>'+DB.filieres.map(fi=>`<option value="${fi.id}">${fi.nom}</option>`).join('');
-  g('pr-mod').innerHTML='<option value="">--</option>'+DB.modules.map(m=>`<option value="${m.id}">${m.code} – ${m.nom}</option>`).join('');
+async function saveProg(){
   const id=gv('pr-id');
-  const d={fiid:parseInt(gv('pr-fi'))||null,mid:parseInt(gv('pr-mod'))||null,annee:parseInt(gv('pr-annee'))||1,
-    sem:parseInt(gv('pr-sem'))||1,deb:gv('pr-deb'),fin:gv('pr-fin'),contenu:gv('pr-contenu'),
-    vh:parseInt(gv('pr-vh'))||0,statut:gv('pr-statut'),rem:gv('pr-rem')};
-  if(!d.mid){alert('Module obligatoire');return;}
-  if(id){const p=DB.programme.find(x=>x.id==id);if(p)Object.assign(p,d);}
-  else{d.id=DB.nid.prog++;DB.programme.push(d);addAct('Entrée programme ajoutée','var(--ac)');}
-  save();closeMod('mod-prog');rProgramme();
+  const mid=parseInt(g('pr-mod').value)||null;
+  const fiid=parseInt(g('pr-fi').value)||null;
+  const d={fiid,mid,annee:parseInt(g('pr-annee').value)||1,
+    sem:parseInt(gv('pr-sem'))||1,deb:gv('pr-deb')||null,fin:gv('pr-fin')||null,
+    contenu:gv('pr-contenu'),vh:parseInt(gv('pr-vh'))||0,
+    statut:g('pr-statut').value||'planifie',rem:gv('pr-rem')};
+  if(!d.mid){alert('Veuillez sélectionner un module.');return;}
+  try {
+    if(SUPA_KEY&&SUPA_KEY.length>=20){
+      if(id){
+        await getSupa().from('programme').update(d).eq('id',parseInt(id)).eq('tenant_id',TENANT_ID);
+        const p=DB.programme.find(x=>x.id==id);if(p)Object.assign(p,d);
+      } else {
+        const {data,error}=await getSupa().from('programme').insert({...d,tenant_id:TENANT_ID}).select();
+        if(error) throw error;
+        if(data&&data[0]) DB.programme.push({...d,...data[0]});
+        else { d.id=DB.nid.prog++;DB.programme.push(d); }
+        addAct('Entrée programme ajoutée','var(--ac)');
+      }
+    } else {
+      if(id){const p=DB.programme.find(x=>x.id==id);if(p)Object.assign(p,d);}
+      else{d.id=DB.nid.prog++;DB.programme.push(d);addAct('Entrée programme ajoutée','var(--ac)');}
+    }
+    save();closeMod('mod-prog');rProgramme();
+  } catch(e){alert('Erreur: '+e.message);}
 }
-function delProg(id){if(!confirm('Supprimer cette entrée ?'))return;DB.programme=DB.programme.filter(x=>x.id!=id);save();rProgramme();}
+async function delProg(id){
+  if(!confirm('Supprimer cette entrée ?'))return;
+  if(SUPA_KEY&&SUPA_KEY.length>=20){await getSupa().from('programme').delete().eq('id',id).eq('tenant_id',TENANT_ID);}
+  DB.programme=DB.programme.filter(x=>x.id!=id);save();rProgramme();
+}
 
 // ============================================================
 // CAHIER DE SUIVI PEDAGOGIQUE
