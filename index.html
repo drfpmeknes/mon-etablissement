@@ -537,6 +537,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
                   <div class="fg"><label>Email</label><input type="email" id="p-email" placeholder="contact@etablissement.ma"></div>
                   <div class="fg"><label>ICE / N° Registre</label><input id="p-ice" placeholder="Ex: 001234567000000"></div>
                 </div>
+                <div style="margin:10px 0 6px;font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;font-weight:700">📋 Autorisation & Accréditation</div>
+                <div class="fr">
+                  <div class="fg"><label>N° Autorisation</label><input id="p-num-autor" placeholder="Ex: 15/2018"></div>
+                  <div class="fg"><label>Date Autorisation</label><input type="date" id="p-date-autor"></div>
+                </div>
+                <div class="fr">
+                  <div class="fg"><label>N° Accréditation</label><input id="p-num-accred" placeholder="Ex: ACC/2020/045"></div>
+                  <div class="fg"><label>Date Accréditation</label><input type="date" id="p-date-accred"></div>
+                </div>
                 <div style="padding-top:6px">
                   <button class="btn btn-p btn-sm" onclick="saveParametres()">💾 Sauvegarder</button>
                 </div>
@@ -975,7 +984,7 @@ async function loadDB(tenantId) {
       ...TABLES.map(t => sbTGet(t))
     ]);
     const T = tenantArr[0]||{};
-    DB.etab = {nom:T.nom||'',soustitre:T.soustitre||'',adresse:T.adresse||'',tel:T.tel||'',email:T.email||'',ice:T.ice||'',logo_emoji:T.logo_emoji||'🎓'};
+    DB.etab = {nom:T.nom||'',soustitre:T.soustitre||'',adresse:T.adresse||'',tel:T.tel||'',email:T.email||'',ice:T.ice||'',logo_emoji:T.logo_emoji||'🎓',num_autorisation:T.num_autorisation||'',date_autorisation:T.date_autorisation||'',num_accreditation:T.num_accreditation||'',date_accreditation:T.date_accreditation||''};
     const _as = T.annees_scolaires;
     DB.anneesScolaires = Array.isArray(_as)?_as:(typeof _as==='string'?(()=>{try{return JSON.parse(_as);}catch(e){return ['2024-2025','2025-2026'];}})():['2024-2025','2025-2026']);
     DB.anneeCourante   = T.annee_courante||'2025-2026';
@@ -1012,6 +1021,10 @@ async function loadDB(tenantId) {
       notes:       maxId(DB.notes),
       prog:        maxId(DB.programme),
       suivi:       maxId(DB.suivi),
+      paie_stag:   maxId(DB.paie_stag),
+      paie_form:   maxId(DB.paie_form),
+      paie_admin:  maxId(DB.paie_admin),
+      depenses:    maxId(DB.depenses),
     };
     localStorage.setItem(KEY+'_'+tenantId, JSON.stringify(DB));
     showLoading(false);
@@ -1043,6 +1056,10 @@ async function saveEtab() {
     await sbReq('tenants?id=eq.'+TENANT_ID,{method:'PATCH',body:JSON.stringify({
       nom:DB.etab.nom,soustitre:DB.etab.soustitre,adresse:DB.etab.adresse,
       tel:DB.etab.tel,email:DB.etab.email,ice:DB.etab.ice,
+      num_autorisation:DB.etab.num_autorisation||null,
+      date_autorisation:DB.etab.date_autorisation||null,
+      num_accreditation:DB.etab.num_accreditation||null,
+      date_accreditation:DB.etab.date_accreditation||null,
       annees_scolaires:JSON.stringify(DB.anneesScolaires),
       annee_courante:DB.anneeCourante
     })});
@@ -1671,13 +1688,14 @@ async function saveStag(){
   const d={
     nom:gv('s-nom'),prenom:gv('s-pre'),cin:gv('s-cin'),ninsc:gv('s-ninsc'),
     ddn:gv('s-ddn')||null,dinsc:gv('s-dinsc')||null,anneeform:parseInt(g('s-anneeform').value)||1,
-    as:asVal, // pour DB locale
+    as:asVal,
     email:gv('s-email'),tel:gv('s-tel'),
     gid:parseInt(g('s-grp').value)||null,fiid:parseInt(g('s-fi').value)||null
   };
   if(!d.nom){showAl('al-stag','⚠️ Le nom est obligatoire','var(--rd)');return;}
-  // Supabase data (may use different col name depending on schema)
-  const dSupa={...d};
+  // Supabase utilise as_annee (as est un mot réservé SQL)
+  const dSupa={...d, as_annee:asVal};
+  delete dSupa.as;
   try {
     if(SUPA_KEY&&SUPA_KEY.length>=20){
       if(id){
@@ -1772,7 +1790,7 @@ async function delibererStag(id, decision){
   
   save();
   if(SUPA_KEY&&SUPA_KEY.length>=20){
-    try{ await sbPut('stagiaires',id,{anneeform:s.anneeform,as:s.as,statut_delib:s.statut_delib,date_diplome:s.date_diplome||null,active:s.active!==false}); }
+    try{ await getSupa().from('stagiaires').update({anneeform:s.anneeform,as_annee:s.as,statut_delib:s.statut_delib,date_diplome:s.date_diplome||null,active:s.active!==false}).eq('id',id).eq('tenant_id',TENANT_ID); }
     catch(e){ console.error('Supabase update error:',e); }
   }
   closeModal();
@@ -2683,6 +2701,10 @@ function rParametres(){
   set('p-tel',    e.tel);
   set('p-email',  e.email);
   set('p-ice',    e.ice);
+  set('p-num-autor',   e.num_autorisation);
+  set('p-date-autor',  e.date_autorisation);
+  set('p-num-accred',  e.num_accreditation);
+  set('p-date-accred', e.date_accreditation);
   // Supabase config
   const supaUrl = localStorage.getItem('supa_url')||SUPA_URL;
   const supaKey = localStorage.getItem('supa_key')||SUPA_KEY.replace('VOTRE_SUPABASE_ANON_KEY','');
@@ -2749,7 +2771,11 @@ function saveParametres(){
   DB.etab.adresse     = gv('p-adr');
   DB.etab.tel         = gv('p-tel');
   DB.etab.email       = gv('p-email');
-  DB.etab.ice         = gv('p-ice');
+  DB.etab.ice              = gv('p-ice');
+  DB.etab.num_autorisation  = gv('p-num-autor');
+  DB.etab.date_autorisation = gv('p-date-autor');
+  DB.etab.num_accreditation = gv('p-num-accred');
+  DB.etab.date_accreditation= gv('p-date-accred');
   save();
   saveEtab();
   // Update all live DOM references
@@ -2904,19 +2930,32 @@ function openEditPaieStag(id){
   sv('ps-ref',p.ref||'');setSel('ps-as',p.as);sv('ps-note',p.note||'');
   openMod('mod-paie-stag');
 }
-function savePaieStag(){
+async function savePaieStag(){
   const id=gv('ps-id');
   const sid=parseInt(g('ps-stag').value)||null;
   const montant=parseFloat(gv('ps-montant'))||0;
   const date_paie=gv('ps-date');
   if(!sid||!montant||!date_paie){alert('Stagiaire, montant et date obligatoires');return;}
+  const asVal=g('ps-as').value||DB.anneeCourante;
   const d={sid,type:gv('ps-type'),mois:gv('ps-mois'),montant,date_paie,
-    mode:gv('ps-mode'),ref:gv('ps-ref'),as:g('ps-as').value||DB.anneeCourante,note:gv('ps-note')};
-  if(id){const p=DB.paie_stag.find(x=>x.id==id);if(p)Object.assign(p,d);}
-  else{d.id=DB.nid.paie_stag++;DB.paie_stag.push(d);addAct('Paiement stagiaire enregistré','var(--gr)');}
-  save();closeMod('mod-paie-stag');rComptaStag();showAl('al-cstag','Paiement enregistré !');
+    mode:gv('ps-mode'),ref:gv('ps-ref'),as:asVal,note:gv('ps-note')};
+  const dSupa={...d,as_annee:asVal}; delete dSupa.as;
+  try {
+    if(SUPA_KEY&&SUPA_KEY.length>=20){
+      if(id){await getSupa().from('paie_stag').update(dSupa).eq('id',parseInt(id)).eq('tenant_id',TENANT_ID);const p=DB.paie_stag.find(x=>x.id==id);if(p)Object.assign(p,d);}
+      else{const {data,error}=await getSupa().from('paie_stag').insert({...dSupa,tenant_id:TENANT_ID}).select();if(error)throw error;const row=data&&data[0]?{...d,...data[0],as:asVal}:{...d,id:DB.nid.paie_stag++};DB.paie_stag.push(row);addAct('Paiement stagiaire enregistré','var(--gr)');}
+    } else {
+      if(id){const p=DB.paie_stag.find(x=>x.id==id);if(p)Object.assign(p,d);}
+      else{d.id=DB.nid.paie_stag++;DB.paie_stag.push(d);addAct('Paiement stagiaire enregistré','var(--gr)');}
+    }
+    save();closeMod('mod-paie-stag');rComptaStag();showAl('al-cstag','✅ Paiement enregistré !');
+  } catch(e){alert('Erreur: '+e.message);}
 }
-function delPaieStag(id){if(!confirm('Supprimer ce paiement ?'))return;DB.paie_stag=DB.paie_stag.filter(x=>x.id!=id);save();rComptaStag();}
+async function delPaieStag(id){
+  if(!confirm('Supprimer ce paiement ?'))return;
+  if(SUPA_KEY&&SUPA_KEY.length>=20){await getSupa().from('paie_stag').delete().eq('id',id).eq('tenant_id',TENANT_ID);}
+  DB.paie_stag=DB.paie_stag.filter(x=>x.id!=id);save();rComptaStag();
+}
 
 // ============================================================
 // COMPTA RH — FORMATEURS + ADMIN
@@ -3002,7 +3041,7 @@ function openEditPaieRH(id,cat){
   setSel('rh-as',p.as);sv('rh-note',p.note||'');
   openMod('mod-paie-rh');
 }
-function savePaieRH(){
+async function savePaieRH(){
   const id=gv('rh-id');
   const cat=gv('rh-cat-val')||gv('rh-pers-cat')||'formateurs';
   const pid=parseInt(g('rh-pers-sel').value)||null;
@@ -3011,20 +3050,29 @@ function savePaieRH(){
   const net=parseFloat(gv('rh-net'))||salaire-cnss;
   const mois=gv('rh-mois');
   if(!pid||!salaire||!mois){alert('Personne, salaire et mois obligatoires');return;}
-  const d={mois,salaire,cnss,net,date_paie:gv('rh-date'),mode:gv('rh-mode'),
-    ref:gv('rh-ref'),as:g('rh-as').value||DB.anneeCourante,note:gv('rh-note')};
-  if(cat==='formateurs'){d.fid=pid;const src=DB.paie_form;
-    if(id){const p=src.find(x=>x.id==id);if(p)Object.assign(p,d);}
-    else{d.id=DB.nid.paie_form++;src.push(d);}
-  } else {d.aid=pid;const src=DB.paie_admin;
-    if(id){const p=src.find(x=>x.id==id);if(p)Object.assign(p,d);}
-    else{d.id=DB.nid.paie_admin++;src.push(d);}
-  }
-  addAct('Salaire enregistré','var(--bl)');
-  save();closeMod('mod-paie-rh');rComptaRH();showAl('al-crh','Paiement enregistré !');
+  const asVal=g('rh-as').value||DB.anneeCourante;
+  const d={mois,salaire,cnss,net,date_paie:gv('rh-date'),mode:gv('rh-mode'),ref:gv('rh-ref'),as:asVal,note:gv('rh-note')};
+  const tbl=cat==='formateurs'?'paie_form':'paie_admin';
+  if(cat==='formateurs') d.fid=pid; else d.aid=pid;
+  const dSupa={...d,as_annee:asVal}; delete dSupa.as;
+  const src=cat==='formateurs'?DB.paie_form:DB.paie_admin;
+  const nidKey=cat==='formateurs'?'paie_form':'paie_admin';
+  try {
+    if(SUPA_KEY&&SUPA_KEY.length>=20){
+      if(id){await getSupa().from(tbl).update(dSupa).eq('id',parseInt(id)).eq('tenant_id',TENANT_ID);const p=src.find(x=>x.id==id);if(p)Object.assign(p,d);}
+      else{const {data,error}=await getSupa().from(tbl).insert({...dSupa,tenant_id:TENANT_ID}).select();if(error)throw error;const row=data&&data[0]?{...d,...data[0],as:asVal}:{...d,id:DB.nid[nidKey]++};src.push(row);}
+    } else {
+      if(id){const p=src.find(x=>x.id==id);if(p)Object.assign(p,d);}
+      else{d.id=DB.nid[nidKey]++;src.push(d);}
+    }
+    addAct('Salaire enregistré','var(--bl)');
+    save();closeMod('mod-paie-rh');rComptaRH();showAl('al-crh','✅ Paiement enregistré !');
+  } catch(e){alert('Erreur: '+e.message);}
 }
-function delPaieRH(id,cat){
+async function delPaieRH(id,cat){
   if(!confirm('Supprimer ?'))return;
+  const tbl=cat==='formateurs'?'paie_form':'paie_admin';
+  if(SUPA_KEY&&SUPA_KEY.length>=20){await getSupa().from(tbl).delete().eq('id',id).eq('tenant_id',TENANT_ID);}
   if(cat==='formateurs')DB.paie_form=DB.paie_form.filter(x=>x.id!=id);
   else DB.paie_admin=DB.paie_admin.filter(x=>x.id!=id);
   save();rComptaRH();
@@ -3084,18 +3132,30 @@ function openEditDep(id){
   sv('dep-ref',d.ref||'');setSel('dep-as',d.as);sv('dep-note',d.note||'');
   openMod('mod-dep');
 }
-function saveDep(){
+async function saveDep(){
   const id=gv('dep-id');
   const montant=parseFloat(gv('dep-montant'))||0;
   const date=gv('dep-date');const lib=gv('dep-lib');
   if(!date||!lib||!montant){alert('Date, libellé et montant obligatoires');return;}
-  const d={date,categorie:gv('dep-cat'),libelle:lib,montant,mode:gv('dep-mode'),
-    ref:gv('dep-ref'),as:g('dep-as').value||DB.anneeCourante,note:gv('dep-note')};
-  if(id){const dep=DB.depenses.find(x=>x.id==id);if(dep)Object.assign(dep,d);}
-  else{d.id=DB.nid.depenses++;DB.depenses.push(d);addAct('Dépense enregistrée','var(--rd)');}
-  save();closeMod('mod-dep');rComptaDep();showAl('al-cdep','Dépense enregistrée !');
+  const asVal=g('dep-as').value||DB.anneeCourante;
+  const d={date,categorie:gv('dep-cat'),libelle:lib,montant,mode:gv('dep-mode'),ref:gv('dep-ref'),as:asVal,note:gv('dep-note')};
+  const dSupa={...d,as_annee:asVal}; delete dSupa.as;
+  try {
+    if(SUPA_KEY&&SUPA_KEY.length>=20){
+      if(id){await getSupa().from('depenses').update(dSupa).eq('id',parseInt(id)).eq('tenant_id',TENANT_ID);const dep=DB.depenses.find(x=>x.id==id);if(dep)Object.assign(dep,d);}
+      else{const {data,error}=await getSupa().from('depenses').insert({...dSupa,tenant_id:TENANT_ID}).select();if(error)throw error;const row=data&&data[0]?{...d,...data[0],as:asVal}:{...d,id:DB.nid.depenses++};DB.depenses.push(row);addAct('Dépense enregistrée','var(--rd)');}
+    } else {
+      if(id){const dep=DB.depenses.find(x=>x.id==id);if(dep)Object.assign(dep,d);}
+      else{d.id=DB.nid.depenses++;DB.depenses.push(d);addAct('Dépense enregistrée','var(--rd)');}
+    }
+    save();closeMod('mod-dep');rComptaDep();showAl('al-cdep','✅ Dépense enregistrée !');
+  } catch(e){alert('Erreur: '+e.message);}
 }
-function delDep(id){if(!confirm('Supprimer ?'))return;DB.depenses=DB.depenses.filter(x=>x.id!=id);save();rComptaDep();}
+async function delDep(id){
+  if(!confirm('Supprimer ?'))return;
+  if(SUPA_KEY&&SUPA_KEY.length>=20){await getSupa().from('depenses').delete().eq('id',id).eq('tenant_id',TENANT_ID);}
+  DB.depenses=DB.depenses.filter(x=>x.id!=id);save();rComptaDep();
+}
 
 
 
