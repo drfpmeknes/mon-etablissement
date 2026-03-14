@@ -24,45 +24,71 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 #mob-overlay.open{opacity:1;pointer-events:auto}
 
 @media(max-width:768px){
-  /* Show hamburger */
   #mob-menu-btn{display:flex}
-
-  /* Sidebar slides from left */
-  .sidebar{
-    transform:translateX(-100%);
-    transition:transform .28s cubic-bezier(.4,0,.2,1);
-    z-index:300;
-    width:260px!important;
-  }
+  .sidebar{transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:300;width:260px!important}
   .sidebar.mob-open{transform:translateX(0)}
-
-  /* Main takes full width */
   .main{margin-left:0!important}
-
-  /* Topbar: add left padding for hamburger */
   .topbar{padding:12px 12px 12px 60px!important;flex-wrap:wrap;gap:8px}
   .tbtitle{font-size:16px!important}
-
-  /* Content padding */
   .content{padding:14px 10px!important}
-
-  /* Forms: single column */
   .fr{grid-template-columns:1fr!important}
-
-  /* Modals: full width */
   .md{width:96vw!important;max-width:96vw!important;max-height:90vh;overflow-y:auto}
-
-  /* Tables */
   table td,table th{white-space:nowrap;padding:6px 8px!important;font-size:12px!important}
   .btn-sm{font-size:11px!important;padding:4px 8px!important}
   .th{flex-wrap:wrap;gap:6px}
-
-  /* Stats grid */
   .sgrid{grid-template-columns:repeat(2,1fr)!important}
   .dash-grid{grid-template-columns:1fr!important}
-
-  /* Année scolaire selector smaller */
   #annee-sel{font-size:11px!important}
+}
+
+/* ═══ TABLEAUX EN MODE CARTE SUR MOBILE ═══ */
+@media(max-width:600px){
+  /* Formateurs, Stagiaires, Modules, Salles, Comptes → vue carte */
+  #tb-form tr, #tb-stag tr, #tb-mod tr, #tb-sal tr,
+  #tb-users tr, #tb-admin tr, #tb-fi tr, #tb-grp tr {
+    display:block;
+    border:1px solid var(--bd);
+    border-radius:8px;
+    margin-bottom:10px;
+    padding:10px 12px;
+    background:var(--sf);
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+  }
+  /* Cacher thead */
+  #tb-form thead, #tb-stag thead, #tb-mod thead, #tb-sal thead,
+  #tb-users thead, #tb-admin thead, #tb-fi thead, #tb-grp thead {display:none}
+  /* Chaque cellule en flex avec label */
+  #tb-form td, #tb-stag td, #tb-mod td, #tb-sal td,
+  #tb-users td, #tb-admin td, #tb-fi td, #tb-grp td {
+    display:flex;align-items:center;justify-content:space-between;
+    padding:5px 0!important;border-bottom:1px solid var(--bd2);
+    font-size:13px!important;white-space:normal!important;
+  }
+  #tb-form td:last-child, #tb-stag td:last-child, #tb-mod td:last-child,
+  #tb-sal td:last-child, #tb-users td:last-child, #tb-admin td:last-child,
+  #tb-fi td:last-child, #tb-grp td:last-child {border-bottom:none;padding-top:8px!important;justify-content:flex-end;gap:6px}
+  /* Labels auto via data-label */
+  #tb-form td[data-l]::before, #tb-stag td[data-l]::before,
+  #tb-mod td[data-l]::before, #tb-sal td[data-l]::before,
+  #tb-users td[data-l]::before, #tb-admin td[data-l]::before,
+  #tb-fi td[data-l]::before, #tb-grp td[data-l]::before {
+    content:attr(data-l);
+    font-size:10px;font-weight:700;color:var(--tx2);
+    text-transform:uppercase;letter-spacing:.04em;
+    flex-shrink:0;margin-right:8px;
+  }
+  /* Rendre le tbl-scroll défilable horizontalement seulement si nécessaire */
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* Boutons actions */
+  .tda{display:flex!important;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+
+  /* Notes table reste scrollable */
+  .ntable{display:table!important}
+  .ntable thead{display:table-header-group!important}
+  .ntable tbody{display:table-row-group!important}
+  .ntable tr{display:table-row!important;border:none!important;margin:0!important;padding:0!important;box-shadow:none!important}
+  .ntable td,.ntable th{display:table-cell!important;padding:4px 6px!important}
 }
 
 
@@ -2151,14 +2177,14 @@ function rFormateurs() {
   }).map(f=>{
     const actif=f.actif===0||f.actif==='0'||f.actif===false?false:true;
     return `<tr>
-    <td>${f.nom}</td><td>${f.prenom}</td>
-    <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${f.cin||'—'}</td>
-    <td><span class="badge ${f.type==='permanent'?'bact':'bf'}">${f.type==='permanent'?'Permanent':'Intervenant'}</span></td>
-    <td>${f.spec||'—'}</td>
-    <td><span class="badge ${actif?'bact':'bf'}">${actif?'✅ Actif':'❌ Non actif'}</span>${!actif&&f.dinact?`<div style="font-size:10px;color:var(--rd);margin-top:2px">depuis ${f.dinact}</div>`:''}</td>
-    <td style="font-size:12px;color:var(--tx2);font-family:'JetBrains Mono',monospace">${f.drecr||'—'}</td>
-    <td style="color:var(--tx2);font-size:12px">${f.email||'—'}</td>
-    <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${f.tel||'—'}</td>
+    <td data-l="Nom">${f.nom}</td><td data-l="Prénom">${f.prenom}</td>
+    <td data-l="CIN" style="font-family:'JetBrains Mono',monospace;font-size:12px">${f.cin||'—'}</td>
+    <td data-l="Type"><span class="badge ${f.type==='permanent'?'bact':'bf'}">${f.type==='permanent'?'Permanent':'Intervenant'}</span></td>
+    <td data-l="Spécialité">${f.spec||'—'}</td>
+    <td data-l="Statut"><span class="badge ${actif?'bact':'bf'}">${actif?'✅ Actif':'❌ Non actif'}</span>${!actif&&f.dinact?`<div style="font-size:10px;color:var(--rd);margin-top:2px">depuis ${f.dinact}</div>`:''}</td>
+    <td data-l="Recrutement" style="font-size:12px;color:var(--tx2);font-family:'JetBrains Mono',monospace">${f.drecr||'—'}</td>
+    <td data-l="Email" style="color:var(--tx2);font-size:12px">${f.email||'—'}</td>
+    <td data-l="Tél." style="font-family:'JetBrains Mono',monospace;font-size:12px">${f.tel||'—'}</td>
     <td class="tda">
       <button class="btn btn-s btn-sm" onclick="openEditForm(${f.id})">Modifier</button>
       <button class="btn btn-d btn-sm" onclick="delForm(${f.id})">Suppr.</button>
@@ -2780,7 +2806,7 @@ function openEditMod(id){
   updatePctBar(); openMod('mod-mod');
 }
 async function saveMod(){
-  g('m-fi').innerHTML='<option value="">Toutes</option>'+DB.filieres.map(fi=>`<option value="${fi.id}">${fi.nom}</option>`).join('');
+  // Lire fiid AVANT de toucher au select
   const id=gv('m-id');
   const d={nom:gv('m-nom'),code:gv('m-code'),fiid:parseInt(gv('m-fi'))||null,coef:parseInt(gv('m-coef'))||1,
     pcc:parseInt(gv('m-pcc'))||0,pth:parseInt(gv('m-pth'))||0,ppr:parseInt(gv('m-ppr'))||0,ppj:parseInt(gv('m-ppj'))||0,
@@ -4373,40 +4399,51 @@ function updateProgMods(){
   const fiid=parseInt(g('pr-fi').value)||null;
   const modSel=g('pr-mod');
   if(!modSel)return;
-  const cur=modSel.value;
+  const cur=modSel.value; // valeur actuelle à restaurer
+
+  // Toujours afficher TOUS les modules, groupés par pertinence
   let html='<option value="">-- Sélectionner un module --</option>';
 
   if(fiid){
-    // Modules de la filière spécifique
-    const modsFi=DB.modules.filter(m=>Number(m.fiid)===fiid);
-    // Modules transversaux (fiid=null = toutes filières ex: Anglais, Communication)
-    const modsTransv=DB.modules.filter(m=>!m.fiid||m.fiid===null||m.fiid==='');
-    // Autres modules (filière différente)
+    const fi=DB.filieres.find(x=>x.id==fiid);
+    // 1. Modules spécifiques à cette filière
+    const modsFi=DB.modules.filter(m=>m.fiid&&Number(m.fiid)===fiid);
+    // 2. Modules transversaux (fiid vide/null = toutes filières)
+    const modsTransv=DB.modules.filter(m=>!m.fiid||m.fiid===''||m.fiid===null);
+    // 3. Modules d'autres filières
     const modsAutres=DB.modules.filter(m=>m.fiid&&Number(m.fiid)!==fiid);
 
     if(modsFi.length){
-      const fi=DB.filieres.find(x=>x.id==fiid);
-      html+=`<optgroup label="📚 Modules de ${fi?fi.nom:'la filière'}">`;
+      html+=`<optgroup label="📚 Modules — ${fi?fi.nom:'filière'}">`;
       modsFi.forEach(m=>{ html+=`<option value="${m.id}">${m.code} – ${m.nom}</option>`; });
       html+=`</optgroup>`;
     }
     if(modsTransv.length){
-      html+=`<optgroup label="🌐 Modules transversaux (toutes filières)">`;
+      html+=`<optgroup label="🌐 Modules transversaux">`;
       modsTransv.forEach(m=>{ html+=`<option value="${m.id}">${m.code} – ${m.nom}</option>`; });
       html+=`</optgroup>`;
     }
     if(modsAutres.length){
-      html+=`<optgroup label="── Autres modules ──">`;
+      html+=`<optgroup label="── Autres filières ──">`;
       modsAutres.forEach(m=>{ html+=`<option value="${m.id}">${m.code} – ${m.nom}</option>`; });
       html+=`</optgroup>`;
     }
+    // Sécurité : si aucun groupe n'a de modules, afficher tout
+    if(!modsFi.length&&!modsTransv.length&&!modsAutres.length){
+      DB.modules.forEach(m=>{ html+=`<option value="${m.id}">${m.code} – ${m.nom}</option>`; });
+    }
   } else {
-    // Pas de filière sélectionnée : tous les modules
+    // Pas de filière : tous les modules
     DB.modules.forEach(m=>{ html+=`<option value="${m.id}">${m.code} – ${m.nom}</option>`; });
   }
 
   modSel.innerHTML=html;
-  if(cur)modSel.value=cur;
+  // Restaurer la sélection si elle existe encore dans la nouvelle liste
+  if(cur){
+    modSel.value=cur;
+    // Si la valeur n'est plus trouvée, ne pas forcer une sélection erronée
+    if(modSel.value!==cur) modSel.value='';
+  }
 }
 function updateCCDates(){
   const n=parseInt(g('pr-ncc').value)||0;
