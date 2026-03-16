@@ -41,54 +41,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
   #annee-sel{font-size:11px!important}
 }
 
-/* ═══ TABLEAUX EN MODE CARTE SUR MOBILE ═══ */
+/* ═══ MOBILE : tableaux scrollables horizontalement ═══ */
 @media(max-width:600px){
-  /* Formateurs, Stagiaires, Modules, Salles, Comptes → vue carte */
-  #tb-form tr, #tb-stag tr, #tb-mod tr, #tb-sal tr,
-  #tb-users tr, #tb-admin tr, #tb-fi tr, #tb-grp tr {
-    display:block;
-    border:1px solid var(--bd);
-    border-radius:8px;
-    margin-bottom:10px;
-    padding:10px 12px;
-    background:var(--sf);
-    box-shadow:0 1px 4px rgba(0,0,0,.08);
+  /* Tous les tableaux restent en mode tableau, scroll horizontal */
+  .tbl-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    /* Indicateur visuel de scroll */
+    background:linear-gradient(to right,var(--sf) 30%,rgba(255,255,255,0)),
+               linear-gradient(to right,rgba(255,255,255,0),var(--sf) 70%) 100% 0,
+               radial-gradient(farthest-side at 0 50%,rgba(0,0,0,.12),transparent),
+               radial-gradient(farthest-side at 100% 50%,rgba(0,0,0,.12),transparent) 100% 0;
+    background-repeat:no-repeat;
+    background-size:40px 100%,40px 100%,14px 100%,14px 100%;
+    background-attachment:local,local,scroll,scroll;
   }
-  /* Cacher thead */
-  #tb-form thead, #tb-stag thead, #tb-mod thead, #tb-sal thead,
-  #tb-users thead, #tb-admin thead, #tb-fi thead, #tb-grp thead {display:none}
-  /* Chaque cellule en flex avec label */
-  #tb-form td, #tb-stag td, #tb-mod td, #tb-sal td,
-  #tb-users td, #tb-admin td, #tb-fi td, #tb-grp td {
-    display:flex;align-items:center;justify-content:space-between;
-    padding:5px 0!important;border-bottom:1px solid var(--bd2);
-    font-size:13px!important;white-space:normal!important;
+  /* Cellules compactes sur mobile */
+  table td, table th{
+    padding:5px 8px!important;
+    font-size:11.5px!important;
+    white-space:nowrap;
   }
-  #tb-form td:last-child, #tb-stag td:last-child, #tb-mod td:last-child,
-  #tb-sal td:last-child, #tb-users td:last-child, #tb-admin td:last-child,
-  #tb-fi td:last-child, #tb-grp td:last-child {border-bottom:none;padding-top:8px!important;justify-content:flex-end;gap:6px}
-  /* Labels auto via data-label */
-  #tb-form td[data-l]::before, #tb-stag td[data-l]::before,
-  #tb-mod td[data-l]::before, #tb-sal td[data-l]::before,
-  #tb-users td[data-l]::before, #tb-admin td[data-l]::before,
-  #tb-fi td[data-l]::before, #tb-grp td[data-l]::before {
-    content:attr(data-l);
-    font-size:10px;font-weight:700;color:var(--tx2);
-    text-transform:uppercase;letter-spacing:.04em;
-    flex-shrink:0;margin-right:8px;
-  }
-  /* Rendre le tbl-scroll défilable horizontalement seulement si nécessaire */
-  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-
-  /* Boutons actions */
-  .tda{display:flex!important;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-
-  /* Notes table reste scrollable */
-  .ntable{display:table!important}
-  .ntable thead{display:table-header-group!important}
-  .ntable tbody{display:table-row-group!important}
-  .ntable tr{display:table-row!important;border:none!important;margin:0!important;padding:0!important;box-shadow:none!important}
-  .ntable td,.ntable th{display:table-cell!important;padding:4px 6px!important}
+  /* Boutons plus petits */
+  .tda .btn{padding:3px 7px!important;font-size:10px!important}
+  /* Badges compacts */
+  .badge{font-size:9px!important;padding:2px 6px!important}
 }
 
 
@@ -1074,8 +1051,22 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <input type="hidden" id="m-id">
     <div class="fr"><div class="fg"><label>Nom du module</label><input id="m-nom" placeholder="Ex: Développement Web"></div><div class="fg"><label>Code</label><input id="m-code" placeholder="DW101"></div></div>
     <div class="fr">
-      <div class="fg"><label>Filière <span style="font-size:10px;color:var(--tx2);font-weight:400">(vide = transversal / toutes filières)</span></label><select id="m-fi"><option value="">🌐 Toutes les filières (transversal)</option></select></div>
+      <div class="fg"><label>Filière <span style="font-size:10px;color:var(--tx2);font-weight:400">(vide = toutes filières)</span></label><select id="m-fi"><option value="">🌐 Toutes les filières</option></select></div>
       <div class="fg"><label>Coefficient</label><input type="number" id="m-coef" value="1" min="1" max="5"></div>
+    </div>
+    <div class="fr">
+      <div class="fg">
+        <label>Année de formation <span style="font-size:10px;color:var(--tx2);font-weight:400">(vide = toutes les années)</span></label>
+        <select id="m-annee">
+          <option value="">🌐 Toutes les années</option>
+          <option value="1">1ère Année uniquement</option>
+          <option value="2">2ème Année uniquement</option>
+          <option value="3">3ème Année uniquement</option>
+          <option value="12">1ère et 2ème Année</option>
+          <option value="23">2ème et 3ème Année</option>
+        </select>
+      </div>
+      <div class="fg"></div>
     </div>
     <div style="border:1px solid var(--bd);border-radius:var(--rs);padding:14px;margin-top:4px">
       <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:12px">⚖️ Pondérations des évaluations</div>
@@ -2793,7 +2784,7 @@ function rModules(){
 function openAddMod(){
   g('mmod-title').textContent='Ajouter un module';
   g('m-fi').innerHTML='<option value="">Toutes</option>'+DB.filieres.map(fi=>`<option value="${fi.id}">${fi.nom}</option>`).join('');
-  sv('m-id','');sv('m-nom','');sv('m-code','');sv('m-coef',1);sv('m-pcc',30);sv('m-pth',20);sv('m-ppr',30);sv('m-ppj',20);sv('m-ncc',2);sv('m-nth',1);sv('m-npr',1);setSel('m-haspj',1);
+  sv('m-id','');sv('m-nom','');sv('m-code','');sv('m-coef',1);sv('m-pcc',30);sv('m-pth',20);sv('m-ppr',30);sv('m-ppj',20);sv('m-ncc',2);sv('m-nth',1);sv('m-npr',1);setSel('m-haspj',1);setSel('m-annee','');
   updatePctBar(); openMod('mod-mod');
 }
 function openEditMod(id){
@@ -2802,13 +2793,13 @@ function openEditMod(id){
   g('m-fi').innerHTML='<option value="">Toutes</option>'+DB.filieres.map(fi=>`<option value="${fi.id}">${fi.nom}</option>`).join('');
   sv('m-id',m.id);sv('m-nom',m.nom);sv('m-code',m.code);setSel('m-fi',m.fiid);sv('m-coef',m.coef);
   sv('m-pcc',m.pcc);sv('m-pth',m.pth);sv('m-ppr',m.ppr);sv('m-ppj',m.ppj);
-  sv('m-ncc',m.ncc);sv('m-nth',m.nth);sv('m-npr',m.npr);setSel('m-haspj',m.haspj?1:0);
+  sv('m-ncc',m.ncc);sv('m-nth',m.nth);sv('m-npr',m.npr);setSel('m-haspj',m.haspj?1:0);setSel('m-annee',m.annee||'');
   updatePctBar(); openMod('mod-mod');
 }
 async function saveMod(){
   // Lire fiid AVANT de toucher au select
   const id=gv('m-id');
-  const d={nom:gv('m-nom'),code:gv('m-code'),fiid:parseInt(gv('m-fi'))||null,coef:parseInt(gv('m-coef'))||1,
+  const d={nom:gv('m-nom'),code:gv('m-code'),fiid:parseInt(gv('m-fi'))||null,annee:gv('m-annee')||null,coef:parseInt(gv('m-coef'))||1,
     pcc:parseInt(gv('m-pcc'))||0,pth:parseInt(gv('m-pth'))||0,ppr:parseInt(gv('m-ppr'))||0,ppj:parseInt(gv('m-ppj'))||0,
     ncc:parseInt(gv('m-ncc'))||0,nth:parseInt(gv('m-nth'))||0,npr:parseInt(gv('m-npr'))||0,haspj:parseInt(gv('m-haspj'))};
   if(!d.nom) return;
@@ -3154,7 +3145,13 @@ function renderNotes(){
   // Filter modules relevant to this group's filiere
   const grpObj=DB.groupes.find(x=>x.id==gid);
   const fiId=grpObj?grpObj.fiid:null;
-  const relevantMods=DB.modules.filter(m=>!m.fiid||m.fiid==fiId);
+  const _grpAnneeN=parseInt(g('n-annee')?.value)||1;
+  const relevantMods=DB.modules.filter(m=>{
+    if(m.fiid&&m.fiid!=fiId)return false; // filière différente
+    if(!m.annee)return true; // pas d'année définie = toutes les années
+    const ma=String(m.annee);
+    return ma===String(_grpAnneeN)||ma.includes(String(_grpAnneeN));
+  });
 
   // Determine annee : priorité à la sélection, sinon gr.annee, sinon anneeform des stagiaires
   const grpFi=DB.filieres.find(x=>x.id==fiId);
@@ -3990,11 +3987,11 @@ function buildGanttPrint(fiid,annee,isReal){
     {bg:'#84CC16',dark:'#4D7C0F',cc:'#E9D5FF',th:'#BAE6FD',pr:'#FED7AA'},
   ];
 
-  let html=`<table id="pgantt-tbl" style="table-layout:fixed;width:100%">
+  let html=`<table>
   <colgroup>
-    <col style="width:${MW}px"><col style="width:${VW}px"><col style="width:${FW}px"><col style="width:${CCW}px">
-    ${Array(NCOLS).fill('').map(()=>`<col style="width:${COL}mm">`).join('')}
-    <col style="width:${TW}px">
+    <col class="cm"><col class="cv"><col class="cf"><col class="cc2">
+    ${Array(NCOLS).fill('').map(()=>'<col class="cs">').join('')}
+    <col class="ct">
   </colgroup>
   <thead><tr>
     <th style="text-align:left">Module</th>
@@ -4018,15 +4015,15 @@ function buildGanttPrint(fiid,annee,isReal){
       let content='';
       if(p.dates_cc&&Array.isArray(p.dates_cc)){
         p.dates_cc.forEach((d,ci)=>{
-          if(dateToMoisIdx(d)===i) content+=`<span class="gantt-marker" style="background:${col.cc};color:#fff" title="CC${ci+1}">★</span>`;
+          if(dateToMoisIdx(d)===i) content+=`<span class="gm" style="background:${col.cc};color:#fff" title="CC${ci+1}">★</span>`;
         });
       }
-      if(p.dth&&dateToMoisIdx(p.dth)===i) content+=`<span class="gantt-sq" style="background:${col.th};border:1.5px solid #5a8ac8" title="Th."></span>`;
-      if(p.dpr&&dateToMoisIdx(p.dpr)===i) content+=`<span class="gantt-sq" style="background:${col.pr};border:1.5px solid #2a7a5a" title="Pr."></span>`;
+      if(p.dth&&dateToMoisIdx(p.dth)===i) content+=`<span class="gs" style="background:${col.th};border:1.5px solid #5a8ac8" title="Th."></span>`;
+      if(p.dpr&&dateToMoisIdx(p.dpr)===i) content+=`<span class="gs" style="background:${col.pr};border:1.5px solid #2a7a5a" title="Pr."></span>`;
 
       if(inRange){
         const r=debIdx===finIdx?'4px':i===debIdx?'4px 0 0 4px':i===finIdx?'0 4px 4px 0':'0';
-        cells+=`<td style="padding:3px 1px;text-align:center"><div class="gantt-bar" style="background:${col.bg};border-radius:${r};display:flex;align-items:center;justify-content:center">${content}</div></td>`;
+        cells+=`<td style="padding:3px 1px;text-align:center"><div class="gb" style="background:${col.bg};border-radius:${r};display:flex;align-items:center;justify-content:center">${content}</div></td>`;
       } else {
         cells+=`<td style="padding:3px 1px;text-align:center">${content}</td>`;
       }
@@ -4297,46 +4294,61 @@ function printGanttNew(){
   const etab=DB.etab||{};
   const progs=DB.programme.filter(p=>p.fiid==fiid&&p.annee==annee);
   if(!progs.length){alert('Aucun module planifie');return;}
-
-  const pz=g('print-zone');
-  const ps=g('_print_orient');
-  // Forcer paysage A3
-  if(ps)ps.textContent='@page{size:A3 landscape;margin:6mm 5mm}@media print{@page{size:A3 landscape;margin:6mm 5mm}body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}';
-
   const ordinal=annee===1?'1ere':annee+'eme';
 
-  pz.innerHTML=`
-    <style>
-      * {-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}
-      body{font-family:Arial,sans-serif;font-size:9px;color:#333}
-      table{border-collapse:collapse;width:100%}
-      th,td{padding:3px 4px;border:1px solid #ccc;vertical-align:middle}
-      th{background:#1A1A2E!important;color:#fff!important;text-align:center}
-      .ph{text-align:center;border-bottom:2px solid #c8935a;padding-bottom:8px;margin-bottom:10px}
-      .ph h1{color:#c8935a;font-size:14px;margin:0 0 3px}
-      .ph p{font-size:9px;color:#666;margin:0}
-      .section-title{font-size:11px;font-weight:700;color:#1A1A2E;margin:10px 0 6px;padding:4px 8px;background:#f0f0f0;border-left:4px solid #c8935a}
-      .page-break{page-break-before:always}
-    </style>
-    <div class="ph">
-      <h1>${etab.nom||'Établissement'}</h1>
-      <p>${fi?fi.nom:''} — ${ordinal} Année — Année scolaire ${DB.anneeCourante||''}</p>
-    </div>
-    <div class="section-title">📋 Planning Prévisionnel</div>
-    ${buildGanttPrint(fiid,annee,false)}
-    <div class="page-break"></div>
-    <div class="ph">
-      <h1>${etab.nom||'Établissement'}</h1>
-      <p>${fi?fi.nom:''} — ${ordinal} Année — Planning de Réalisation</p>
-    </div>
-    <div class="section-title">📈 Planning de Réalisation</div>
-    ${buildGanttPrint(fiid,annee,true)}
-  `;
+  // Ouvrir dans un nouvel onglet pour garantir le paysage
+  const win=window.open('','_blank');
+  if(!win){alert('Autorisez les popups pour imprimer');return;}
 
-  setTimeout(()=>{
-    window.print();
-    setTimeout(()=>{pz.innerHTML='';if(ps)ps.textContent='';},1500);
-  },300);
+  const prev=buildGanttPrint(fiid,annee,false);
+  const real=buildGanttPrint(fiid,annee,true);
+
+  win.document.write(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title>Planning ${fi?fi.nom:''} - ${ordinal} Annee</title>
+<style>
+  @page { size: A3 landscape; margin: 8mm 6mm; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5px; color: #222; margin: 0; padding: 6mm; width: 100%; }
+  h1 { font-size: 13px; color: #c8935a; margin: 0 0 2px; }
+  .ph { text-align: center; border-bottom: 2px solid #c8935a; padding-bottom: 6px; margin-bottom: 8px; }
+  .ph p { font-size: 8px; color: #666; margin: 0; }
+  .stitle { font-size: 10px; font-weight: 700; color: #1A1A2E; margin: 8px 0 5px; padding: 3px 8px; background: #f0f0f0; border-left: 4px solid #c8935a; }
+  .page-break { page-break-before: always; padding-top: 6mm; }
+  table { border-collapse: collapse; width: 420mm; table-layout: fixed; }
+  th, td { border: 1px solid #bbb; padding: 3px 3px; vertical-align: middle; overflow: hidden; }
+  th { background: #1A1A2E !important; color: #fff !important; text-align: center; font-size: 7.5px; }
+  td { font-size: 7.5px; }
+  .gantt-bar { height: 14px; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+  .gantt-marker { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; font-size: 7px; line-height: 10px; text-align: center; font-weight: 900; }
+  .gantt-sq { display: inline-block; width: 10px; height: 10px; vertical-align: middle; }
+  .taux-bar { height: 4px; background: #ddd; border-radius: 2px; margin-top: 2px; }
+  .taux-fill { height: 4px; border-radius: 2px; }
+  .leg { margin-top: 5px; font-size: 7px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .leg-item { display: flex; align-items: center; gap: 3px; }
+  .leg-box { width: 14px; height: 8px; border-radius: 2px; display: inline-block; }
+  .leg-circ { width: 10px; height: 10px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 900; }
+  /* Largeurs des colonnes : 420mm / (4 cols fixes + 11 mois + taux) = optimisé */
+  /* Module=55mm, VH=12mm, Form=28mm, CC=10mm, 11×mois×25mm=275mm, Taux=12mm = 392mm */
+  col.c-mod  { width: 55mm; }
+  col.c-vh   { width: 12mm; }
+  col.c-form { width: 28mm; }
+  col.c-cc   { width: 10mm; }
+  col.c-mois { width: 25mm; }
+  col.c-taux { width: 12mm; }
+</style>
+</head><body>
+<div class="ph"><h1>${etab.nom||'Etablissement'}</h1><p>${fi?fi.nom:''} &mdash; ${ordinal} Annee &mdash; Annee scolaire ${DB.anneeCourante||''}</p></div>
+<div class="stitle">Planning Previsionnel</div>
+${prev}
+<div class="page-break">
+<div class="ph"><h1>${etab.nom||'Etablissement'}</h1><p>${fi?fi.nom:''} &mdash; ${ordinal} Annee &mdash; Planning de Realisation</p></div>
+<div class="stitle">Planning de Realisation</div>
+${real}
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script>
+</body></html>`);
+  win.document.close();
 }
 
 function rProgramme() {
