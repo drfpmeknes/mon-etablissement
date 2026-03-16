@@ -1011,12 +1011,26 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- STAGIAIRE -->
 <div class="mo" id="mod-stag">
-  <div class="md">
+  <div class="md" style="max-width:620px">
     <div class="md-title" id="mstag-title">Stagiaire</div><div class="md-sub">Inscription et dossier</div>
     <input type="hidden" id="s-id">
-    <div class="fr"><div class="fg"><label>Nom</label><input id="s-nom" placeholder="Nom"></div><div class="fg"><label>Prénom</label><input id="s-pre" placeholder="Prénom"></div></div>
+    <div class="fr">
+      <div class="fg"><label>Nom <span style="font-size:10px;color:var(--tx2)">(FR)</span></label><input id="s-nom" placeholder="Nom"></div>
+      <div class="fg"><label>Prénom <span style="font-size:10px;color:var(--tx2)">(FR)</span></label><input id="s-pre" placeholder="Prénom"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>الاسم العائلي <span style="font-size:10px;color:var(--tx2)">(AR)</span></label><input id="s-nom-ar" dir="rtl" placeholder="الاسم بالعربية" style="text-align:right"></div>
+      <div class="fg"><label>الاسم الشخصي <span style="font-size:10px;color:var(--tx2)">(AR)</span></label><input id="s-pre-ar" dir="rtl" placeholder="الاسم الشخصي" style="text-align:right"></div>
+    </div>
     <div class="fr"><div class="fg"><label>CIN</label><input id="s-cin" placeholder="AB123456"></div><div class="fg"><label>N° Inscription</label><input id="s-ninsc" placeholder="Ex: 2025001"></div></div>
-    <div class="fr"><div class="fg"><label>Date naissance</label><input type="date" id="s-ddn"></div><div class="fg"><label>Lieu de naissance</label><input id="s-lieu-naissance" placeholder="Ex: Meknès, Fès..."></div></div>
+    <div class="fr">
+      <div class="fg"><label>Date naissance</label><input type="date" id="s-ddn"></div>
+      <div class="fg"><label>Lieu de naissance <span style="font-size:10px;color:var(--tx2)">(FR)</span></label><input id="s-lieu-naissance" placeholder="Ex: Meknès"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>مكان الازدياد <span style="font-size:10px;color:var(--tx2)">(AR)</span></label><input id="s-lieu-ar" dir="rtl" placeholder="مكناس، فاس..." style="text-align:right"></div>
+      <div class="fg"></div>
+    </div>
     <div class="fr"><div class="fg"><label>Année de formation</label><select id="s-anneeform"><option value="1">1ère Année</option><option value="2">2ème Année</option><option value="3">3ème Année</option></select></div><div class="fg"></div></div>
     <div class="fr"><div class="fg"><label>Date d'inscription</label><input type="date" id="s-dinsc"></div><div class="fg"><label>Année scolaire</label><select id="s-as"><option value="">-- Sélectionner --</option></select></div></div>
     <div class="fr"><div class="fg"><label>Email</label><input type="email" id="s-email"></div><div class="fg"><label>Téléphone</label><input id="s-tel"></div></div>
@@ -1027,21 +1041,35 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- FILIERE -->
 <div class="mo" id="mod-fi">
-  <div class="md" style="width:420px">
+  <div class="md" style="width:480px">
     <div class="md-title" id="mfi-title">Filière</div><div class="md-sub"></div>
     <input type="hidden" id="fi-id">
-    <div class="fg"><label>Nom de la filière</label><input id="fi-nom" placeholder="Ex: Développement Digital"></div>
     <div class="fr">
-      <div class="fg"><label>Niveau</label><select id="fi-niv"><option>Technicien Spécialisé</option><option>Technicien</option><option>Qualification</option><option>Spécialisation</option></select></div>
+      <div class="fg"><label>Nom de la filière (FR)</label><input id="fi-nom" placeholder="Ex: Développement Digital"></div>
+      <div class="fg"><label>الاسم بالعربية (AR)</label><input id="fi-nom-ar" dir="rtl" placeholder="مثال: التطوير الرقمي" style="text-align:right"></div>
+    </div>
+    <div class="fr">
+      <div class="fg">
+        <label>Niveau</label>
+        <select id="fi-niv" onchange="updateNivoAr()">
+          <option>Technicien Spécialisé</option>
+          <option>Technicien</option>
+          <option>Qualification</option>
+          <option>Spécialisation</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>المستوى (AR) <span style="font-size:10px;color:var(--tx2);font-weight:400">— automatique</span></label>
+        <input id="fi-niv-ar" dir="rtl" readonly style="text-align:right;background:var(--sf2);color:var(--tx2);cursor:not-allowed" placeholder="يُملأ تلقائياً">
+      </div>
+    </div>
+    <div class="fr">
       <div class="fg"><label>Durée (années)</label><input type="number" id="fi-dur" min="1" max="5" value="2"></div>
+      <div class="fg"><label>Statut</label><select id="fi-statut"><option value="active">✅ Active</option><option value="suspendue">⏸️ Suspendue</option><option value="supprimee">❌ Supprimée</option></select></div>
     </div>
     <div class="fr">
       <div class="fg"><label>Date de création</label><input type="date" id="fi-dcreation"></div>
       <div class="fg"><label>Date de suppression</label><input type="date" id="fi-dsuppression"></div>
-    </div>
-    <div class="fr">
-      <div class="fg"><label>Statut</label><select id="fi-statut"><option value="active">✅ Active</option><option value="suspendue">⏸️ Suspendue</option><option value="supprimee">❌ Supprimée</option></select></div>
-      <div class="fg"></div>
     </div>
     <div class="md-foot"><button class="btn btn-s btn-sm" onclick="closeMod('mod-fi')">Annuler</button><button class="btn btn-p btn-sm" onclick="saveFi()">Sauvegarder</button></div>
   </div>
@@ -2311,8 +2339,8 @@ function populateStagSels(){
 function openAddStag(){
   g('mstag-title').textContent='Inscrire un stagiaire';
   populateStagSels();
-  sv('s-id',''); sv('s-nom',''); sv('s-pre',''); sv('s-cin',''); sv('s-ninsc','');
-  sv('s-ddn',''); sv('s-lieu-naissance',''); sv('s-email',''); sv('s-tel',''); sv('s-dinsc',new Date().toISOString().split('T')[0]);
+  sv('s-id',''); sv('s-nom',''); sv('s-pre',''); sv('s-nom-ar',''); sv('s-pre-ar',''); sv('s-cin',''); sv('s-ninsc','');
+  sv('s-ddn',''); sv('s-lieu-naissance',''); sv('s-lieu-ar',''); sv('s-email',''); sv('s-tel',''); sv('s-dinsc',new Date().toISOString().split('T')[0]);
   setSel('s-anneeform','1'); setSel('s-as',DB.anneeCourante);
   openMod('mod-stag');
 }
@@ -2320,8 +2348,8 @@ function openEditStag(id){
   const s=DB.stagiaires.find(x=>x.id==id); if(!s) return;
   g('mstag-title').textContent="Modifier le stagiaire";
   populateStagSels();
-  sv('s-id',s.id); sv('s-nom',s.nom); sv('s-pre',s.prenom); sv('s-cin',s.cin);
-  sv('s-ninsc',s.ninsc||''); sv('s-ddn',s.ddn||''); sv('s-lieu-naissance',s.lieu_naissance||''); sv('s-dinsc',s.dinsc||'');
+  sv('s-id',s.id); sv('s-nom',s.nom); sv('s-pre',s.prenom); sv('s-nom-ar',s.nom_ar||''); sv('s-pre-ar',s.prenom_ar||''); sv('s-cin',s.cin);
+  sv('s-ninsc',s.ninsc||''); sv('s-ddn',s.ddn||''); sv('s-lieu-naissance',s.lieu_naissance||''); sv('s-lieu-ar',s.lieu_naissance_ar||''); sv('s-dinsc',s.dinsc||'');
   sv('s-email',s.email||''); sv('s-tel',s.tel||'');
   setSel('s-grp',s.gid); setSel('s-fi',s.fiid);
   setSel('s-anneeform',s.anneeform||1); setSel('s-as',s.as||DB.anneeCourante);
@@ -2331,8 +2359,8 @@ async function saveStag(){
   const id=gv('s-id');
   const asVal = g('s-as').value||DB.anneeCourante;
   const d={
-    nom:gv('s-nom'),prenom:gv('s-pre'),cin:gv('s-cin'),ninsc:gv('s-ninsc'),
-    ddn:gv('s-ddn')||null,lieu_naissance:gv('s-lieu-naissance')||null,dinsc:gv('s-dinsc')||null,anneeform:parseInt(g('s-anneeform').value)||1,
+    nom:gv('s-nom'),prenom:gv('s-pre'),nom_ar:gv('s-nom-ar')||null,prenom_ar:gv('s-pre-ar')||null,cin:gv('s-cin'),ninsc:gv('s-ninsc'),
+    ddn:gv('s-ddn')||null,lieu_naissance:gv('s-lieu-naissance')||null,lieu_naissance_ar:gv('s-lieu-ar')||null,dinsc:gv('s-dinsc')||null,anneeform:parseInt(g('s-anneeform').value)||1,
     as:asVal,
     email:gv('s-email'),tel:gv('s-tel'),
     gid:parseInt(g('s-grp').value)||null,fiid:parseInt(g('s-fi').value)||null
@@ -2737,10 +2765,10 @@ function rGroupes(){
     <td class="tda"><button class="btn btn-s btn-sm" onclick="openEditGrp(${gr.id})">Modifier</button><button class="btn btn-d btn-sm" onclick="delGrp(${gr.id})">Suppr.</button></td></tr>`;
   }).join('')||er(4);
 }
-function openAddFi(){g('mfi-title').textContent='Ajouter une filière';sv('fi-id','');sv('fi-nom','');sv('fi-dur',2);sv('fi-dcreation',new Date().toISOString().split('T')[0]);sv('fi-dsuppression','');setSel('fi-statut','active');openMod('mod-fi');}
-function openEditFi(id){const fi=DB.filieres.find(x=>x.id==id);if(!fi)return;g('mfi-title').textContent="Modifier la filière";sv('fi-id',fi.id);sv('fi-nom',fi.nom);setSel('fi-niv',fi.niv);sv('fi-dur',fi.dur||2);sv('fi-dcreation',fi.date_creation||'');sv('fi-dsuppression',fi.date_suppression||'');setSel('fi-statut',fi.statut_fi||'active');openMod('mod-fi');}
+function openAddFi(){g('mfi-title').textContent='Ajouter une filière';sv('fi-id','');sv('fi-nom','');sv('fi-nom-ar','');sv('fi-dur',2);sv('fi-dcreation',new Date().toISOString().split('T')[0]);sv('fi-dsuppression','');setSel('fi-statut','active');updateNivoAr();openMod('mod-fi');}
+function openEditFi(id){const fi=DB.filieres.find(x=>x.id==id);if(!fi)return;g('mfi-title').textContent="Modifier la filière";sv('fi-id',fi.id);sv('fi-nom',fi.nom);sv('fi-nom-ar',fi.nom_ar||'');setSel('fi-niv',fi.niv);sv('fi-dur',fi.dur||2);sv('fi-dcreation',fi.date_creation||'');sv('fi-dsuppression',fi.date_suppression||'');setSel('fi-statut',fi.statut_fi||'active');updateNivoAr();openMod('mod-fi');}
 async function saveFi(){
-  const id=gv('fi-id'),d={nom:gv('fi-nom'),niv:gv('fi-niv'),dur:parseInt(gv('fi-dur'))||2,duree:parseInt(gv('fi-dur'))||2,date_creation:gv('fi-dcreation')||null,date_suppression:gv('fi-dsuppression')||null,statut_fi:gv('fi-statut')||'active'};
+  const id=gv('fi-id'),niv=gv('fi-niv'),d={nom:gv('fi-nom'),nom_ar:gv('fi-nom-ar')||'',niv,niv_ar:NIVO_AR[niv]||niv,dur:parseInt(gv('fi-dur'))||2,duree:parseInt(gv('fi-dur'))||2,date_creation:gv('fi-dcreation')||null,date_suppression:gv('fi-dsuppression')||null,statut_fi:gv('fi-statut')||'active'};
   if(!d.nom)return;
   try {
     if(SUPA_KEY&&SUPA_KEY.length>=20){
@@ -3835,6 +3863,14 @@ function renderBul(){
 // ============================================================
 // PLANNING GANTT PÉDAGOGIQUE
 // ============================================================
+// Niveaux en arabe (traduction officielle, non modifiable)
+const NIVO_AR={
+  'Technicien Spécialisé':'تقني متخصص',
+  'Technicien':'تقني',
+  'Qualification':'تأهيل',
+  'Spécialisation':'تخصص'
+};
+function nivoAr(n){return NIVO_AR[n]||n||'';}
 const GANTT_MOIS = ['Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Jun','Jul'];
 const GANTT_MOIS_NUM = [9,10,11,12,1,2,3,4,5,6,7]; // numéros de mois
 
@@ -4434,6 +4470,11 @@ function rProgramme() {
   renderGantt();
 }
 
+function updateNivoAr(){
+  const niv=g('fi-niv')?g('fi-niv').value:'';
+  const ar=NIVO_AR[niv]||'';
+  if(g('fi-niv-ar'))g('fi-niv-ar').value=ar;
+}
 function updateProgMods(){
   const fiid=parseInt(g('pr-fi').value)||null;
   const modSel=g('pr-mod');
@@ -5336,7 +5377,7 @@ function printFicheEffectif(){
         const nb=DB.stagiaires.filter(s=>s.gid==gr.id&&s.fiid==fi.id).length;
         totalGlobal+=nb;
         const nivo={ts:'Technicien Spécialisé',t:'Technicien',q:'Qualification'}[fi.niveau]||(fi.niveau||'');
-        rows+=`<tr><td>${fi.nom}</td><td>${nivo}</td><td>${gr.nom}</td><td style="text-align:center">${gr.annee||1}</td><td style="text-align:center;font-weight:700">${nb}</td></tr>`;
+        rows+=`<tr><td>${fi.nom}${fi.nom_ar?`<div style="direction:rtl;font-size:7.5px;color:#555">${fi.nom_ar}</div>`:''}</td><td>${nivo}<div style="direction:rtl;font-size:7.5px;color:#555">${nivoAr(fi.niveau||fi.niv||'')}</div></td><td>${gr.nom}</td><td style="text-align:center">${gr.annee||1}</td><td style="text-align:center;font-weight:700">${nb}</td></tr>`;
       });
     }
   });
@@ -5398,7 +5439,8 @@ function printListeLaureats(){
   laur.forEach((s,i)=>{
     const fi=DB.filieres.find(x=>x.id==s.fiid);
     const gr=DB.groupes.find(x=>x.id==s.gid);
-    rows+=`<tr><td style="text-align:center">${i+1}</td><td>${s.ninsc||'—'}</td><td><b>${s.nom}</b> ${s.prenom}</td><td>${s.cin||'—'}</td><td>${fi?fi.nom:'—'}</td><td>${fi?({ts:'Tech. Spécialisé',t:'Technicien',q:'Qualification'}[fi.niveau]||fi.niveau):'—'}</td><td>${s.ddiplome||'—'}</td></tr>`;
+    const nomArL=s.nom_ar&&s.prenom_ar?`<div style="direction:rtl;font-size:7px;color:#555">${s.prenom_ar} ${s.nom_ar}</div>`:'';
+    rows+=`<tr><td style="text-align:center">${i+1}</td><td>${s.ninsc||'—'}</td><td><b>${s.nom}</b> ${s.prenom}${nomArL}</td><td>${s.cin||'—'}</td><td>${fi?fi.nom:'—'}${fi&&fi.nom_ar?`<div style="direction:rtl;font-size:7px;color:#555">${fi.nom_ar}</div>`:''}</td><td>${fi?nivoAr(fi.niv||fi.niveau||''):'—'}<br><span style="font-size:7px;color:#888">${fi?fi.niv||fi.niveau||'':''}</span></td><td>${s.ddiplome||'—'}</td></tr>`;
   });
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Lauréats</title>
   <style>@page{size:A4;margin:10mm 8mm}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box;margin:0;padding:0}
@@ -5428,7 +5470,7 @@ function printFicheAdmisLaureats(){
     const abandon=stags.filter(s=>s.statut==='abandon').length;
     const total=stags.length;
     const nivo={ts:'Tech. Spécialisé',t:'Technicien',q:'Qualification'}[fi.niveau]||(fi.niveau||'');
-    rows+=`<tr><td>${fi.nom}</td><td>${nivo}</td><td style="text-align:center;color:#2a7a5a;font-weight:700">${admis}</td><td style="text-align:center;color:#5a8ac8;font-weight:700">${laur}</td><td style="text-align:center">${redoub}</td><td style="text-align:center;color:#c03020">${abandon}</td><td style="text-align:center;font-weight:700">${total}</td><td style="text-align:center;font-weight:700;color:${total>0?'#2a7a5a':'#999'}">${total>0?Math.round((admis+laur)/total*100):0}%</td></tr>`;
+    rows+=`<tr><td>${fi.nom}${fi.nom_ar?`<br><span style="direction:rtl;font-size:7px;color:#555">${fi.nom_ar}</span>`:''}</td><td>${nivo}<br><span style="direction:rtl;font-size:7px;color:#555">${nivoAr(fi.niveau||fi.niv||'')}</span></td><td style="text-align:center;color:#2a7a5a;font-weight:700">${admis}</td><td style="text-align:center;color:#5a8ac8;font-weight:700">${laur}</td><td style="text-align:center">${redoub}</td><td style="text-align:center;color:#c03020">${abandon}</td><td style="text-align:center;font-weight:700">${total}</td><td style="text-align:center;font-weight:700;color:${total>0?'#2a7a5a':'#999'}">${total>0?Math.round((admis+laur)/total*100):0}%</td></tr>`;
   });
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Admis et Lauréats</title>
   <style>@page{size:A4;margin:10mm 8mm}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box;margin:0;padding:0}
