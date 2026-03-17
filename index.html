@@ -3720,7 +3720,7 @@ function renderBul(){
     const resCls=moy===null?'#999':moy>=10?'#155724':'#721c24';
     // Ligne détail synthétique
     detailRows+=`<tr style="border-bottom:1px solid #eee">
-      <td style="padding:7px 10px"><strong style="font-size:11px">${mod.code}</strong> <span style="color:#666">${mod.nom}</span> <span style="font-size:10px;color:#999">×${mod.coef}</span></td>
+      <td style="padding:7px 10px"><strong style="font-size:11px;color:var(--ac)">${mod.nom}</strong> <span style="font-size:10px;color:#999">Coef ×${mod.coef}</span></td>
       <td style="padding:7px 10px;text-align:center;color:#c8935a;font-weight:600">${ccAvg}</td>
       <td style="padding:7px 10px;text-align:center;color:#5a8ac8;font-weight:600">${thAvg}</td>
       <td style="padding:7px 10px;text-align:center;color:#2a7a5a;font-weight:600">${prAvg}</td>
@@ -3734,8 +3734,7 @@ function renderBul(){
       <!-- Module header -->
       <div style="background:var(--sf2);border-bottom:1px solid var(--bd);padding:9px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div>
-          <span style="font-weight:700;font-size:13px">${mod.code}</span>
-          <span style="color:var(--tx2);margin-left:8px">${mod.nom}</span>
+          <span style="font-weight:700;font-size:13px;color:var(--ac)">${mod.nom}</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <span style="font-size:11px;color:var(--tx3)">Coef ×${mod.coef}</span>
@@ -3789,8 +3788,7 @@ function renderBul(){
     const moyStr=moy!==null?moy.toFixed(2):'—';
     const rCls=moy===null?'':moy>=10?'color:#155724':'color:#721c24';
     sumRows+=`<tr style="border-bottom:1px solid #eee">
-      <td style="padding:7px 10px;font-family:monospace;font-size:11px">${mod.code}</td>
-      <td style="padding:7px 10px">${mod.nom}</td>
+      <td style="padding:7px 10px;font-weight:600">${mod.nom}</td>
       <td style="padding:7px 10px;text-align:center">×${mod.coef}</td>
       <td style="padding:7px 10px;text-align:center;color:#c8935a">${avgArr2(note?.cc)||'—'}</td>
       <td style="padding:7px 10px;text-align:center;color:#5a8ac8">${avgArr2(note?.th)||'—'}</td>
@@ -3847,22 +3845,27 @@ function renderBul(){
           </tr></thead>
           <tbody>${sumRows||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#999">Aucune note</td></tr>'}</tbody>
           <tfoot>
-            ${isLastYearBul&&s.note_pff!==null&&s.note_pff!==undefined&&s.note_pff!==''?`<tr style="background:#f9f5ff;border-top:1px solid #ddd">
-              <td colspan="3" style="padding:8px 10px;text-align:right;font-size:12px;color:#9a5ac8;font-weight:600">🎓 Projet de Fin de Formation :</td>
-              <td colspan="3"></td>
-              <td style="padding:8px 10px;text-align:center;font-weight:700;color:#9a5ac8">${parseFloat(s.note_pff).toFixed(2)}</td>
-              <td></td><td></td>
-            </tr>`:''}
-            <tr style="background:#fdf6ec;border-top:2px solid #c8935a">
-              <td colspan="7" style="padding:10px;text-align:right;font-weight:700;font-size:13px">Moyenne générale :</td>
-              <td style="padding:10px;text-align:center;font-weight:700;font-size:16px;color:${mentColor}">${mgStr}</td>
-              <td style="padding:10px;text-align:center;font-weight:700;color:${mentColor}">${ment}</td>
-            </tr>
+            ${(()=>{
+              const labAn={1:'1ere Annee',2:'2eme Annee',3:'3eme Annee'}[grpAnnee]||grpAnnee+'eme Annee';
+              if(isLastYearBul){
+                const pffRow=s.note_pff!==null&&s.note_pff!==undefined&&s.note_pff!==''
+                  ?'<tr style="background:#f9f5ff;border-top:1px solid #ddd"><td colspan="3" style="padding:8px 10px;text-align:right;font-size:12px;color:#9a5ac8;font-weight:600">PFE :</td><td colspan="3"></td><td style="padding:8px 10px;text-align:center;font-weight:700;color:#9a5ac8">'+parseFloat(s.note_pff).toFixed(2)+'</td><td></td><td></td></tr>':'';
+                return pffRow+'<tr style="background:#fdf6ec;border-top:2px solid #c8935a"><td colspan="7" style="padding:10px;text-align:right;font-weight:700;font-size:13px">Moyenne Generale Finale :</td><td style="padding:10px;text-align:center;font-weight:700;font-size:16px;color:'+mentColor+'">'+mgStr+'</td><td style="padding:10px;text-align:center;font-weight:700;color:'+mentColor+'">'+ment+'</td></tr>';
+              } else {
+                const mp=mgCalc.moyParAn?mgCalc.moyParAn[grpAnnee]:null;
+                let n=0,hasMoy=false;
+                if(mp){if(mp.cc!==null){n+=mp.cc*30;hasMoy=true;}if(mp.th!==null){n+=mp.th*20;hasMoy=true;}if(mp.pr!==null){n+=mp.pr*30;hasMoy=true;}}
+                const mNum=hasMoy?n/80:null;
+                const mStr=mNum!==null?mNum.toFixed(2):'—';
+                const mCol=mNum!==null?(mNum>=10?'#2a7a5a':'#c0392b'):'#999';
+                const mMent=mNum!==null?(mNum>=16?'Tres Bien':mNum>=14?'Bien':mNum>=12?'Assez Bien':mNum>=10?'Passable':'Ajourne(e)'):'';
+                return '<tr style="background:#fdf6ec;border-top:2px solid #c8935a"><td colspan="7" style="padding:10px;text-align:right;font-weight:700;font-size:13px">Moyenne '+labAn+' :</td><td style="padding:10px;text-align:center;font-weight:700;font-size:16px;color:'+mCol+'">'+mStr+'</td><td style="padding:10px;text-align:center;font-weight:700;color:'+mCol+'">'+mMent+'</td></tr>';
+              }
+            })()}
           </tfoot>
         </table>
       </div>
     </div>
-
     <!-- Synthèse selon année du stagiaire -->
     <div style="margin-top:18px;margin-bottom:18px">
 
@@ -4599,28 +4602,38 @@ function printGanttNew(exportWord){
     return;
   }
 
-  // ── Impression PDF A4 paysage (blob HTML)
-  const pageHTML=`<!DOCTYPE html><html lang="fr"><head>
-    <meta charset="UTF-8">
-    <title>Planning ${fi?fi.nom:''} ${ordFr}Annee</title>
-    <style>${css}</style>
-    </head><body>
-    <div class="page">
-      ${hdrBlock('PLANNING PREVISIONNEL','التخطيط التوقعي')}
-      ${prev}
-    </div>
-    <div class="page pb">
-      ${hdrBlock('PLANNING DE REALISATION','تخطيط الإنجاز')}
-      ${real}
-    </div>
-    <script>window.addEventListener('load',function(){setTimeout(function(){window.print();},500);})<\/script>
-    </body></html>`;
-
-  const blob=new Blob([pageHTML],{type:'text/html;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const win=window.open(url,'_blank');
-  if(!win){const a=document.createElement('a');a.href=url;a.download='planning.html';a.click();}
-  setTimeout(()=>URL.revokeObjectURL(url),6000);
+  // ── Impression A4 paysage via window.open + document.write
+  const win=window.open('','_blank','width=1200,height=800');
+  if(!win){alert('Autorisez les popups pour imprimer');return;}
+  win.document.open();
+  win.document.write('<!DOCTYPE html><html lang="fr"><head>');
+  win.document.write('<meta charset="UTF-8">');
+  win.document.write('<title>Planning '+( fi?fi.nom:'')+' '+ordFr+'Annee</title>');
+  win.document.write('<style>');
+  win.document.write('@page{size:A4 landscape;margin:8mm 7mm}');
+  win.document.write('@media print{@page{size:A4 landscape;margin:8mm 7mm}}');
+  win.document.write('*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box;margin:0;padding:0}');
+  win.document.write('body{font-family:Arial,Helvetica,sans-serif;font-size:8px;color:#111;background:#fff;width:281mm}');
+  win.document.write('.pb{page-break-before:always;padding-top:4mm}');
+  win.document.write('table{border-collapse:collapse}');
+  win.document.write('th{background:#1A1A2E!important;color:#fff!important}');
+  win.document.write('</style></head><body>');
+  win.document.write('<div>');
+  win.document.write(hdrBlock('PLANNING PREVISIONNEL','التخطيط التوقعي'));
+  win.document.write(prev);
+  win.document.write('</div>');
+  win.document.write('<div class="pb">');
+  win.document.write(hdrBlock('PLANNING DE REALISATION','تخطيط الإنجاز'));
+  win.document.write(real);
+  win.document.write('</div>');
+  win.document.write('<script>');
+  win.document.write('window.onload=function(){');
+  win.document.write('  document.title="Planning '+( fi?fi.nom.replace(/"/g,''):'')+' '+ordFr+'";');
+  win.document.write('  setTimeout(function(){window.print();},600);');
+  win.document.write('};');
+  win.document.write('<\/script>');
+  win.document.write('</body></html>');
+  win.document.close();
 }
 
 
@@ -4663,7 +4676,7 @@ function rProgramme() {
     const statLabels={planifie:'Planifié',encours:'En cours',termine:'Terminé',reporte:'Reporté'};
     html+=`<tr>
       <td><span class="prog-week">${p.sem}</span></td>
-      <td><div style="font-weight:700;font-size:12.5px">${(DB.etab&&DB.etab.num_accreditation)?'':(mod?mod.code+' — ':'?')}<span style="font-weight:${(DB.etab&&DB.etab.num_accreditation)?'700':'400'}">${mod?mod.nom:''}</span></div></td>
+      <td><div style="font-weight:700;font-size:12.5px;color:var(--ac)">${mod?mod.nom:'?'}</div></td>
       <td style="font-size:11.5px;color:var(--tx2);font-family:'JetBrains Mono',monospace">${p.deb||'—'}<br>${p.fin||'—'}</td>
       <td style="max-width:220px;font-size:12px;line-height:1.5">${p.contenu||'—'}</td>
       <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700">${p.vh||'—'}</td>
