@@ -1239,6 +1239,15 @@ const sbGet  = async (t,q='') => {
   return data||[];
 };
 const sbTGet = (t,q='') => sbGet(t,'tenant_id=eq.'+TENANT_ID+(q?'&'+q:''));
+// Wrapper avec timeout pour les requêtes Supabase
+async function sbGetWithTimeout(url, opts={}, ms=15000){
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, {...opts, signal:ctrl.signal});
+    return r;
+  } finally { clearTimeout(timer); }
+}
 const sbPost = async (t,b) => {
   const {data,error} = await getSupa().from(t).insert(b).select();
   if(error) throw new Error(error.message);
@@ -1397,11 +1406,20 @@ async function loadDB(tenantId) {
     localStorage.setItem(KEY+'_'+tenantId, JSON.stringify(DB));
     showLoading(false);
   } catch(err) {
-    console.error('Supabase:', err);
+    console.error('loadDB error:', err);
     OFFLINE_MODE = true;
     loadDBLocal(tenantId);
     showLoading(false);
-    showBanner('⚠️ Mode hors-ligne — données locales','var(--rd)');
+    const emsg = (err&&err.message)||String(err||'');
+    let banner = '⚠️ Mode hors-ligne';
+    if(emsg.includes('column')||emsg.includes('relation')){
+      banner = '⚠️ Colonne manquante: '+emsg.substring(0,100)+'. Exécutez le SQL manquant.';
+    } else if(emsg.includes('permission')||emsg.includes('policy')){
+      banner = '⚠️ Permission Supabase: GRANT ALL ON [table] TO anon;';
+    } else if(emsg){
+      banner = '⚠️ Erreur Supabase: '+emsg.substring(0,120);
+    }
+    showBanner(banner,'var(--rd)');
   }
 }
 
@@ -1748,8 +1766,52 @@ async function doLogin() {
     g('super-panel').style.display='none';
     setupApp();
   } catch(e) {
-    showLoginErr('li-err','Erreur de connexion. Vérifiez votre connexion internet.');
-    console.error(e);
+    console.error('doLogin error:', e);
+    const msg = e.message||String(e);
+    // Afficher le vrai message d erreur + proposer le cache
+    let errTxt = 'Erreur: ' + msg;
+    if(msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')){
+      errTxt = 'Erreur réseau. Vérifiez votre connexion internet.';
+    } else if(msg.includes('column') || msg.includes('relation') || msg.includes('does not exist')){
+      errTxt = 'Erreur base de données: ' + msg + '. Exécutez les scripts SQL manquants.';
+    } else if(msg.includes('JWT') || msg.includes('token') || msg.includes('auth')){
+      errTxt = 'Erreur authentification. Vérifiez la clé Supabase dans les paramètres.';
+    } else if(msg.includes('permission') || msg.includes('policy') || msg.includes('RLS')){
+      errTxt = 'Erreur permissions Supabase. Exécutez: GRANT ALL ON [table] TO anon;';
+    }
+    // Tentative fallback : charger depuis cache local
+    try {
+      const keys = Object.keys(localStorage).filter(k=>k.startsWith('edumgr_v3_cache_'));
+      let loaded = false;
+      for(const k of keys){
+        const d = JSON.parse(localStorage.getItem(k)||'{}');
+        if(d.users){
+          const ul = gv('li-u').trim().toLowerCase();
+          const pw = gv('li-p').trim();
+          const u2 = d.users.find(x=>x.active&&x.password===pw&&(
+            (x.username&&x.username.toLowerCase()===ul)||
+            (x.cin&&x.cin.toLowerCase()===ul)||
+            (x.ninsc&&x.ninsc.toLowerCase()===ul)
+          ));
+          if(u2){
+            TENANT_ID = k.replace('edumgr_v3_cache_','');
+            OFFLINE_MODE = true;
+            loadDBLocal(TENANT_ID);
+            CU = DB.users.find(x=>x.id===u2.id)||u2;
+            g('auth').style.display='none';
+            g('app').style.display='block';
+            g('super-panel').style.display='none';
+            setupApp();
+            showBanner('⚠️ Mode hors-ligne (données locales) — Erreur Supabase: '+msg.substring(0,80),'var(--rd)');
+            loaded = true;
+            break;
+          }
+        }
+      }
+      if(!loaded) showLoginErr('li-err', errTxt);
+    } catch(e2){
+      showLoginErr('li-err', errTxt);
+    }
   }
   if(btn){ btn.textContent='Se connecter'; btn.disabled=false; }
 }
