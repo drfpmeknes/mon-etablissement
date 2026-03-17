@@ -3775,16 +3775,15 @@ function renderBul(){
   const mgStr=mg!==null?mg.toFixed(2):'—';
   const ment=mg===null?'—':mg>=16?'Très Bien':mg>=14?'Bien':mg>=12?'Assez Bien':mg>=10?'Passable':'Ajourné(e)';
   const mentColor=mg===null?'var(--tx3)':mg>=10?'var(--gr)':'var(--rd)';
-  // Moyenne de l'année courante (pour les années intermédiaires)
-  const _mpAn=mgCalc.moyParAn?mgCalc.moyParAn[grpAnnee]:null;
-  let moyAnCour=null;
-  if(_mpAn){let _n=0,_h=false;if(_mpAn.cc!==null){_n+=_mpAn.cc*30;_h=true;}if(_mpAn.th!==null){_n+=_mpAn.th*20;_h=true;}if(_mpAn.pr!==null){_n+=_mpAn.pr*30;_h=true;}if(_h)moyAnCour=_n/80;}
-  const labAnCour={1:'1ère Année',2:'2ème Année',3:'3ème Année'}[grpAnnee]||grpAnnee+'ème Année';
-  // Valeurs à afficher dans le tfoot selon l'année
-  const footLbl=isLastYearBul?'Moyenne Générale Finale :':`Moyenne ${labAnCour} :`;
-  const footVal=isLastYearBul?mgStr:(moyAnCour!==null?moyAnCour.toFixed(2):'—');
-  const footCol=isLastYearBul?mentColor:(moyAnCour!==null?(moyAnCour>=10?'var(--gr)':'var(--rd)'):'var(--tx3)');
-  const footMent=isLastYearBul?ment:(moyAnCour!==null?(moyAnCour>=16?'Très Bien':moyAnCour>=14?'Bien':moyAnCour>=12?'Assez Bien':moyAnCour>=10?'Passable':'Ajourné(e)'):'—');
+  // Moyenne de l'année courante — utiliser .moy déjà calculé dans moyParAn
+  const _panAn = mgCalc.moyParAn ? mgCalc.moyParAn[grpAnnee] : null;
+  const moyAnCour = _panAn ? _panAn.moy : null;
+  const labAnCour = {1:'1ère Année',2:'2ème Année',3:'3ème Année'}[grpAnnee] || (grpAnnee+'ème Année');
+  // Valeurs tfoot : moyenne de l'année si intermédiaire, MG finale si dernière année
+  const footLbl   = isLastYearBul ? 'Moyenne Générale Finale :' : ('Moyenne '+labAnCour+' :');
+  const footVal   = isLastYearBul ? mgStr : (moyAnCour!==null ? moyAnCour.toFixed(2) : '—');
+  const footCol   = isLastYearBul ? mentColor : (moyAnCour!==null ? (moyAnCour>=10?'var(--gr)':'var(--rd)') : 'var(--tx3)');
+  const footMent  = isLastYearBul ? ment : (moyAnCour!==null ? (moyAnCour>=16?'Très Bien':moyAnCour>=14?'Bien':moyAnCour>=12?'Assez Bien':moyAnCour>=10?'Passable':'Ajourné(e)') : '—');
 
   // Summary table (compact, for quick overview)
   let sumRows='';
