@@ -480,7 +480,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="view" id="vw-groupes">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
             <div class="tc">
-              <div class="th"><span class="tt">Filières</span><button class="btn btn-s btn-sm" onclick="openAddFi()">+ Ajouter</button></div>
+              <div class="th"><span class="tt">Filières</span>
+                <div style="display:flex;gap:5px;flex-wrap:wrap">
+                  <button class="btn btn-s btn-sm" onclick="openAddFi()">+ Ajouter</button>
+                  <button class="btn btn-s btn-sm" onclick="dlTemplate('filieres')" title="Télécharger modèle Excel">📥 Modèle</button>
+                  <label class="btn btn-s btn-sm" style="cursor:pointer" title="Importer depuis Excel">📤 Importer<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel('filieres',this)"></label>
+                </div>
+              </div>
               <div class="tbl-scroll"><table><thead><tr><th>Filière</th><th>Niveau</th><th>Durée</th><th>Date création</th><th>Date suppression</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tb-fi"></tbody></table></div>
             </div>
             <div class="tc">
@@ -7722,27 +7728,24 @@ async function importExcel(type, input) {
           const prenom = (r['Prénom']||'').trim();
           if(!nom||nom.startsWith('⚠️')) continue;
           const cin = (r['CIN']||'').trim();
-          // ── Vérification doublon : CIN ou Nom+Prénom identique ──
-          // Doublon uniquement si même CIN (non vide)
-          const existe = cin ? DB.formateurs.find(f=>
-            f.cin && f.cin.toLowerCase()===cin.toLowerCase()
-          ) : null;
+          const existe = cin ? DB.formateurs.find(f=>f.cin&&f.cin.toLowerCase()===cin.toLowerCase()) : null;
           if(existe){ duplicates++; continue; }
+          const typeRaw=(r['Type (permanent/intervenant/autre)']||r['Type (permanent/intervenant)']||'permanent').trim().toLowerCase();
+          const typeVal=typeRaw==='intervenant'?'intervenant':typeRaw==='autre'?'autre':'permanent';
           const d={
-            nom, prenom, cin,
-            type: (r['Type (permanent/intervenant)']||'permanent').trim().toLowerCase()==='intervenant'?'intervenant':'permanent',
+            nom, prenom, cin, type:typeVal,
             spec: (r['Spécialité']||'').trim(),
             email: (r['Email']||'').trim(),
-            tel: (r['Téléphone']||'').toString().trim()
+            tel: (r['Téléphone']||'').toString().trim(),
+            drecr: toDateStr(r['Date recrutement (AAAA-MM-JJ)'])||null,
+            actif: 1
           };
           try {
             if(SUPA_KEY&&SUPA_KEY.length>=20){
               const {data,error}=await getSupa().from('formateurs').insert({...d,tenant_id:TENANT_ID}).select();
               if(error) throw error;
               if(data&&data[0]) DB.formateurs.push({...d,...data[0]});
-            } else {
-              d.id=DB.nid.formateurs++; DB.formateurs.push(d);
-            }
+            } else { d.id=DB.nid.formateurs++; DB.formateurs.push(d); }
             added++;
           } catch(err){ skipped++; errors.push(nom+': '+err.message); }
         }
@@ -7770,9 +7773,13 @@ async function importExcel(type, input) {
           const gr=DB.groupes.find(x=>x.nom&&x.nom.toLowerCase()===grNom.toLowerCase());
           const asVal=(r['Année scolaire']||DB.anneeCourante).toString().trim();
           const d={
-            nom, prenom, cin, ninsc,
+            nom, prenom,
+            nom_ar: (r['Nom (AR) الاسم العائلي']||r['Nom AR']||'').trim()||null,
+            prenom_ar: (r['Prénom (AR) الاسم الشخصي']||r['Prénom AR']||'').trim()||null,
+            cin, ninsc,
             ddn: toDateStr(r['Date naissance (AAAA-MM-JJ)']),
-            lieu_naissance: (r['Lieu naissance']||'').trim()||null,
+            lieu_naissance: (r['Lieu naissance (FR)']||r['Lieu naissance']||'').trim()||null,
+            lieu_naissance_ar: (r['Lieu naissance (AR) مكان الازدياد']||r['Lieu naissance AR']||'').trim()||null,
             dinsc: toDateStr(r['Date inscription (AAAA-MM-JJ)']),
             anneeform: parseInt(r['Année formation (1/2/3)'])||1,
             email: (r['Email']||'').trim(),
@@ -7796,6 +7803,38 @@ async function importExcel(type, input) {
         save(); rStagiaires();
         const msg = `✅ Import terminé : ${added} ajouté(s)${duplicates?' | ⚠️ '+duplicates+' doublon(s) ignoré(s)':''}${skipped?' | ❌ '+skipped+' erreur(s)':''}`;
         showAl('al-stag', msg, added?'':'var(--rd)');
+
+      } else if(type==='filieres'){
+        const NIVO_MAP={'Technicien Spécialisé':'Technicien Spécialisé','technicien spécialisé':'Technicien Spécialisé','Technicien':'Technicien','technicien':'Technicien','Qualification':'Qualification','qualification':'Qualification','Spécialisation':'Spécialisation'};
+        for(const r of rows){
+          const nom=(r['Nom de la filière (FR)']||r['Nom']||'').trim();
+          if(!nom||nom.startsWith('⚠️')) continue;
+          const existe=DB.filieres.find(f=>f.nom&&f.nom.toLowerCase()===nom.toLowerCase());
+          if(existe){duplicates++;continue;}
+          const nivRaw=(r['Niveau']||'Technicien Spécialisé').trim();
+          const niv=NIVO_MAP[nivRaw]||nivRaw;
+          const d={
+            nom,
+            nom_ar:(r['Nom en arabe (AR)']||'').trim()||null,
+            niv,
+            niv_ar:NIVO_AR[niv]||niv,
+            dur:parseInt(r['Durée (années)'])||2,
+            duree:parseInt(r['Durée (années)'])||2,
+            date_creation:toDateStr(r['Date création (AAAA-MM-JJ)'])||new Date().toISOString().split('T')[0],
+            statut_fi:(r['Statut (active/suspendue)']||'active').trim().toLowerCase()||'active'
+          };
+          try{
+            if(SUPA_KEY&&SUPA_KEY.length>=20){
+              const {data,error}=await getSupa().from('filieres').insert({...d,tenant_id:TENANT_ID}).select();
+              if(error)throw error;
+              if(data&&data[0])DB.filieres.push({...d,...data[0]});
+            } else {d.id=DB.nid.filieres||1;DB.nid.filieres=(DB.nid.filieres||1)+1;DB.filieres.push(d);}
+            added++;
+          }catch(err){skipped++;errors.push(nom+': '+err.message);}
+        }
+        save();rGroupes();
+        const msgFi=`✅ Import filières : ${added} ajouté(s)${duplicates?' | ⚠️ '+duplicates+' doublon(s)':''}${skipped?' | ❌ '+skipped+' erreur(s)':''}`;
+        alert(msgFi);
 
       } else if(type==='modules'){
         for(const r of rows){
