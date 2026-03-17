@@ -1341,10 +1341,20 @@ async function loadDB(tenantId) {
   try {
     const TABLES = ['users','admin_staff','formateurs','filieres','groupes','stagiaires',
       'modules','salles','seances','notes','programme','suivi','paie_stag','paie_form','paie_admin','depenses'];
-    const [tenantArr, ...rows] = await Promise.all([
-      sbGet('tenants','id=eq.'+tenantId),
-      ...TABLES.map(t => sbTGet(t))
-    ]);
+
+    // Charger chaque table individuellement avec fallback []
+    // Ainsi une colonne manquante ne bloque pas toute la connexion
+    async function safeGet(t, isTenant){
+      try{
+        return isTenant ? await sbGet('tenants','id=eq.'+tenantId) : await sbTGet(t);
+      }catch(e){
+        dbg('⚠️ Table '+t+' erreur: '+e.message+' (ignoré, fallback [])','#ffaa44');
+        return [];
+      }
+    }
+
+    const tenantArr = await safeGet('tenants', true);
+    const rows = await Promise.all(TABLES.map(t => safeGet(t, false)));
     const T = tenantArr[0]||{};
     DB.etab = {nom:T.nom||'',soustitre:T.soustitre||'',nom_ar:T.nom_ar||'',soustitre_ar:T.soustitre_ar||'',adresse:T.adresse||'',tel:T.tel||'',email:T.email||'',ice:T.ice||'',logo_emoji:T.logo_emoji||'🎓',num_autorisation:T.num_autorisation||'',date_autorisation:T.date_autorisation||'',num_accreditation:T.num_accreditation||'',date_accreditation:T.date_accreditation||'',directeur:T.directeur||'',president_jury:T.president_jury||''};
     const _as = T.annees_scolaires;
@@ -1902,24 +1912,41 @@ const PT = {
 };
 
 function setupApp() {
-  const _pre = CU.prenom||'';
-  const _nom = CU.nom||'';
-  g('unm').textContent = (_pre+' '+_nom).trim()||CU.username||'Utilisateur';
-  g('url').textContent = {admin:'Administrateur',formateur:'Formateur',stagiaire:'Stagiaire'}[CU.role]||CU.role||'';
-  g('uav').textContent = (_pre&&_pre.length?_pre[0].toUpperCase():'')+(_nom&&_nom.length?_nom[0].toUpperCase():'U');
-  // Init annee scolaire selector
-  const asel = g('annee-sel');
-  asel.innerHTML = DB.anneesScolaires.map(a=>`<option value="${a}" ${a===DB.anneeCourante?'selected':''}>${a}</option>`).join('');
-  // Allow admin to add new year
-  if(CU.role==='admin'){
-    asel.innerHTML += '<option value="__new__">+ Nouvelle année...</option>';
+  try{
+    dbg('setupApp: début','#888');
+    const _pre = CU.prenom||'';
+    const _nom = CU.nom||'';
+    dbg('setupApp: nom/prenom ok','#888');
+    g('unm').textContent = (_pre+' '+_nom).trim()||CU.username||'Utilisateur';
+    g('url').textContent = {admin:'Administrateur',formateur:'Formateur',stagiaire:'Stagiaire'}[CU.role]||CU.role||'';
+    g('uav').textContent = (_pre&&_pre.length?_pre[0].toUpperCase():'')+(_nom&&_nom.length?_nom[0].toUpperCase():'U');
+    dbg('setupApp: unm/url/uav ok','#888');
+    const asel = g('annee-sel');
+    if(asel){
+      asel.innerHTML = (DB.anneesScolaires||['2024-2025','2025-2026']).map(a=>`<option value="${a}" ${a===DB.anneeCourante?'selected':''}>${a}</option>`).join('');
+      if(CU.role==='admin') asel.innerHTML += '<option value="__new__">+ Nouvelle année...</option>';
+    }
+    dbg('setupApp: annee-sel ok','#888');
+    const nav = g('snav');
+    if(nav){
+      nav.innerHTML = (NAVS[CU.role]||NAVS.admin).map(sec =>
+        `<div class="nsec"><div class="nsec-lbl">${sec.s}</div>${sec.i.map(it=>`<div class="ni" id="ni-${it.id}" onclick="go('${it.id}')"><span class="ic">${it.ic}</span>${it.l}</div>`).join('')}</div>`
+      ).join('');
+    }
+    dbg('setupApp: nav ok','#888');
+    go('dashboard');
+    dbg('setupApp: go dashboard ok','#888');
+    syncEtabName();
+    dbg('setupApp: syncEtabName ok — CONNEXION REUSSIE','#2a7a5a');
+  }catch(e){
+    dbg('setupApp ERREUR: '+e.message+' | '+e.stack.split('\n')[0],'#ff4444');
+    // Afficher l erreur réelle à l utilisateur
+    showLoginErr('li-err','Erreur application: '+e.message);
+    // Ne PAS masquer l auth
+    g('auth').style.display='flex';
+    g('app').style.display='none';
+    throw e;
   }
-  const nav = g('snav');
-  nav.innerHTML = (NAVS[CU.role]||NAVS.admin).map(sec =>
-    `<div class="nsec"><div class="nsec-lbl">${sec.s}</div>${sec.i.map(it=>`<div class="ni" id="ni-${it.id}" onclick="go('${it.id}')"><span class="ic">${it.ic}</span>${it.l}</div>`).join('')}</div>`
-  ).join('');
-  go('dashboard');
-  syncEtabName();
 }
 
 function onAnneeChange(){
