@@ -7061,6 +7061,18 @@ function printTable(type) {
 }
 
 // ============================================================
+// Convertit AAAA-MM-JJ → JJ/MM/AAAA pour affichage Excel
+function toFrDate(v){
+  if(!v) return '';
+  const s=String(v).trim();
+  // Déjà au format JJ/MM/AAAA
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+  // Format AAAA-MM-JJ
+  const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m) return `${m[3]}/${m[2]}/${m[1]}`;
+  return s;
+}
+
 function exportExcel(type) {
   let wb = XLSX.utils.book_new();
   let rows = [], sheetName = 'Export', filename = 'export.xlsx';
@@ -7084,13 +7096,13 @@ function exportExcel(type) {
     rows=[['N°','N° Inscription','Nom','Prénom','CIN','Filière','Année formation','Groupe','Date naissance','Date inscription','Année scolaire','Email','Téléphone']];
     xlsList.forEach((s,i)=>{
       const gr=DB.groupes.find(x=>x.id==s.gid),fi=DB.filieres.find(x=>x.id==s.fiid);
-      rows.push([i+1,s.ninsc||'',s.nom,s.prenom,s.cin||'',fi?fi.nom:'',s.anneeform||1,gr?gr.nom:'',s.ddn||'',s.dinsc||'',s.as||'',s.email||'',s.tel||'']);
+      rows.push([i+1,s.ninsc||'',s.nom,s.prenom,s.cin||'',fi?fi.nom:'',s.anneeform||1,gr?gr.nom:'',toFrDate(s.ddn),toFrDate(s.dinsc),s.as||'',s.email||'',s.tel||'']);
     });
 
   } else if (type === 'formateurs') {
     filename=`formateurs_${DB.anneeCourante.replace('-','_')}.xlsx`; sheetName='Formateurs';
-    rows=[['N°','Nom','Prénom','CIN','Type','Spécialité','Email','Téléphone']];
-    DB.formateurs.forEach((f,i)=>rows.push([i+1,f.nom,f.prenom,f.cin||'',f.type==='permanent'?'Permanent':'Intervenant',f.spec,f.email,f.tel]));
+    rows=[['N°','Nom','Prénom','CIN','Type','Spécialité','Email','Téléphone','Date recrutement']];
+    DB.formateurs.forEach((f,i)=>rows.push([i+1,f.nom,f.prenom,f.cin||'',f.type==='permanent'?'Permanent':'Intervenant',f.spec,f.email,f.tel,toFrDate(f.drecr)]));
 
   } else if (type === 'programme') {
     filename = 'programme_formation.xlsx'; sheetName = 'Programme';
@@ -7100,7 +7112,7 @@ function exportExcel(type) {
     rows=[['Semaine','Module','Code','Contenu prévu','Date début','Date fin','Volume horaire (h)','Statut','Remarques']];
     progs.forEach(p=>{
       const mod=DB.modules.find(x=>x.id==p.mid);
-      rows.push([p.sem,mod?mod.nom:'',mod?mod.code:'',p.contenu,p.deb||'',p.fin||'',p.vh,p.statut,p.rem||'']);
+      rows.push([p.sem,mod?mod.nom:'',mod?mod.code:'',p.contenu,toFrDate(p.deb),toFrDate(p.fin),p.vh,p.statut,p.rem||'']);
     });
 
   } else if (type === 'suivi') {
@@ -7111,7 +7123,7 @@ function exportExcel(type) {
     rows=[['Date','Heure début','Heure fin','Groupe','Module','Formateur','Contenu traité','Objectifs atteints','Observations','Prochaine séance','Présents','Réalisation (%)']];
     entries.forEach(s=>{
       const mod=DB.modules.find(x=>x.id==s.mid),gr=DB.groupes.find(x=>x.id==s.gid),frm=DB.formateurs.find(x=>x.id==s.fid);
-      rows.push([s.date,s.deb,s.fin,gr?gr.nom:'',mod?mod.nom:'',frm?frm.prenom+' '+frm.nom:'',s.contenu||'',s.obj||'',s.obs||'',s.next||'',s.pres||0,s.taux||0]);
+      rows.push([toFrDate(s.date),s.deb,s.fin,gr?gr.nom:'',mod?mod.nom:'',frm?frm.prenom+' '+frm.nom:'',s.contenu||'',s.obj||'',s.obs||'',s.next||'',s.pres||0,s.taux||0]);
     });
 
   } else if (type === 'bulletins') {
@@ -7160,7 +7172,7 @@ function exportExcel(type) {
     rows=[['Date','Stagiaire','N° Inscription','CIN','Filière','Type','Mois/Période','Montant (DH)','Mode','Référence','Année scolaire','Note']];
     list.forEach(p=>{
       const s=DB.stagiaires.find(x=>x.id==p.sid),fi=s?DB.filieres.find(x=>x.id==s.fiid):null;
-      rows.push([p.date_paie,s?s.prenom+' '+s.nom:'?',s?s.ninsc||'':'',s?s.cin||'':'',fi?fi.nom:'',TYPE_STAG[p.type]||p.type,p.mois||'',p.montant||0,MODE_LBL[p.mode]||p.mode,p.ref||'',p.as||'',p.note||'']);
+      rows.push([toFrDate(p.date_paie),s?s.prenom+' '+s.nom:'?',s?s.ninsc||'':'',s?s.cin||'':'',fi?fi.nom:'',TYPE_STAG[p.type]||p.type,p.mois||'',p.montant||0,MODE_LBL[p.mode]||p.mode,p.ref||'',p.as||'',p.note||'']);
     });
     // Total row
     const total=list.reduce((a,p)=>a+(p.montant||0),0);
@@ -7181,7 +7193,7 @@ function exportExcel(type) {
       let nom='?',poste='';
       if(cat==='formateurs'){const f=DB.formateurs.find(x=>x.id==p.fid);nom=f?f.prenom+' '+f.nom:'?';poste=f?f.spec:'';}
       else{const a=DB.admin_staff.find(x=>x.id==p.aid);nom=a?a.prenom+' '+a.nom:'?';poste=a?a.poste:'';}
-      rows.push([p.mois,nom,poste,p.salaire||0,p.cnss||0,p.net||0,p.date_paie||'',MODE_LBL[p.mode]||p.mode,p.ref||'',p.as||'',p.note||'']);
+      rows.push([p.mois,nom,poste,p.salaire||0,p.cnss||0,p.net||0,toFrDate(p.date_paie),MODE_LBL[p.mode]||p.mode,p.ref||'',p.as||'',p.note||'']);
     });
     const tB=list.reduce((a,p)=>a+(p.salaire||0),0),tC=list.reduce((a,p)=>a+(p.cnss||0),0),tN=list.reduce((a,p)=>a+(p.net||0),0);
     rows.push(['','TOTAL','',tB,tC,tN,'','','','','']);
@@ -7196,7 +7208,7 @@ function exportExcel(type) {
     list.sort((a,b)=>b.date.localeCompare(a.date));
     filename=`depenses_${ac.replace('-','_')}.xlsx`; sheetName='Dépenses';
     rows=[['Date','Catégorie','Libellé','Montant (DH)','Mode','Référence','Année scolaire','Note']];
-    list.forEach(d=>rows.push([d.date,CAT_LBL[d.categorie]||d.categorie,d.libelle,d.montant||0,MODE_LBL[d.mode]||d.mode,d.ref||'',d.as||'',d.note||'']));
+    list.forEach(d=>rows.push([toFrDate(d.date),CAT_LBL[d.categorie]||d.categorie,d.libelle,d.montant||0,MODE_LBL[d.mode]||d.mode,d.ref||'',d.as||'',d.note||'']));
     const total=list.reduce((a,d)=>a+(d.montant||0),0);
     rows.push(['','','TOTAL',total,'','','','']);
   }
@@ -8357,55 +8369,60 @@ function dlTemplate(type) {
 
   if(type==='stagiaires'){
     name='Modele_Stagiaires';
-    const headers=[['N° Inscription','Nom (FR)','Prénom (FR)','Nom (AR)','Prénom (AR)','CIN','Date naissance (AAAA-MM-JJ)','Lieu naissance (FR)','Lieu naissance (AR)','Date inscription (AAAA-MM-JJ)','Année formation (1/2/3)','Email','Téléphone','Filière (nom exact)','Groupe (nom exact)','Année scolaire']];
-    const exemple=[['S-2024-001','ALAOUI','Mohammed','العلوي','محمد','AB123456','2000-05-15','Meknès','مكناس','2024-09-01','1','m.alaoui@email.com','0600000000','Informatique','G1','2024-2025']];
+    const headers=[['N° Inscription','Nom (FR)','Prénom (FR)','Nom (AR)','Prénom (AR)','CIN','Date naissance (JJ/MM/AAAA)','Lieu naissance (FR)','Lieu naissance (AR)','Date inscription (JJ/MM/AAAA)','Année formation (1/2/3)','Email','Téléphone','Filière (nom exact)','Groupe (nom exact)','Année scolaire','Niveau scolaire','Passerelle (O/N)','Redoublant (O/N)','Adresse']];
+    const exemple=[['S-2024-001','ALAOUI','Mohammed','العلوي','محمد','AB123456','15/05/2000','Meknès','مكناس','01/09/2024','1','m.alaoui@email.com','0600000000','Informatique','G1','2024-2025','Baccalauréat','N','N','N° 5 Hay Essalam, Meknès']];
     const info=[
       ['Instructions :'],
       ['1- Ne pas modifier les en-tetes (ligne 1)'],
       ['2- Nom/Prenom AR : facultatifs, utilises dans les documents officiels'],
       ['3- Filiere et Groupe : noms identiques a ceux dans l application'],
-      ['4- Date format: AAAA-MM-JJ (ex: 2000-05-15)'],
+      ['4- Dates au format JJ/MM/AAAA (ex: 15/05/2000)'],
       ['5- Annee formation: 1, 2 ou 3'],
-      ['6- Laisser vide si information non disponible']
+      ['6- Passerelle et Redoublant : O ou N'],
+      ['7- Laisser vide si information non disponible']
     ];
     ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,[''],...info]);
-    ws['!cols']=[{wch:16},{wch:14},{wch:14},{wch:20},{wch:20},{wch:12},{wch:22},{wch:16},{wch:22},{wch:22},{wch:18},{wch:24},{wch:13},{wch:20},{wch:14},{wch:14}];
+    ws['!cols']=[{wch:16},{wch:14},{wch:14},{wch:20},{wch:20},{wch:12},{wch:22},{wch:16},{wch:22},{wch:22},{wch:18},{wch:24},{wch:13},{wch:20},{wch:14},{wch:14},{wch:18},{wch:14},{wch:14},{wch:30}];
 
   } else if(type==='formateurs'){
     name='Modele_Formateurs';
-    const headers=[['Nom','Prénom','CIN','Type (permanent/intervenant/autre)','Spécialité','Email','Téléphone','Date recrutement (AAAA-MM-JJ)']];
+    const headers=[['Nom','Prénom','CIN','Type (permanent/intervenant/autre)','Spécialité','Email','Téléphone','Date recrutement (JJ/MM/AAAA)']];
     const exemple=[
-      ['BENNANI','Karim','CD789012','permanent','Informatique','k.bennani@email.com','0611111111','2020-09-01'],
-      ['TAZI','Sara','EF345678','intervenant','Mathématiques','s.tazi@email.com','0622222222','2022-01-15'],
-      ['KHIYAL','Adil','D453566','autre','Langues','a.khiyal@email.com','0633333333','2021-06-01']
+      ['BENNANI','Karim','CD789012','permanent','Informatique','k.bennani@email.com','0611111111','01/09/2020'],
+      ['TAZI','Sara','EF345678','intervenant','Mathématiques','s.tazi@email.com','0622222222','15/01/2022'],
+      ['KHIYAL','Adil','D453566','autre','Langues','a.khiyal@email.com','0633333333','01/06/2021']
     ];
     const info=[
       ['Instructions :'],
       ['1- Ne pas modifier les en-tetes (ligne 1)'],
       ['2- Type: permanent, intervenant ou autre'],
       ['3- CIN obligatoire (detection des doublons)'],
-      ['4- Tous les champs sauf Email, Tel. et Date recrutement sont obligatoires']
+      ['4- Dates au format JJ/MM/AAAA (ex: 01/09/2020)'],
+      ['5- Tous les champs sauf Email, Tel. et Date recrutement sont obligatoires']
     ];
     ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,[''],...info]);
     ws['!cols']=[{wch:15},{wch:15},{wch:12},{wch:30},{wch:20},{wch:25},{wch:14},{wch:24}];
 
   } else if(type==='filieres'){
     name='Modele_Filieres';
-    const headers=[['Nom de la filiere (FR)','Nom en arabe (AR)','Niveau','Duree (annees)','Date creation (AAAA-MM-JJ)','Statut (active/suspendue)']];
+    const todayFr=toFrDate(new Date().toISOString().split('T')[0]);
+    const headers=[['Nom de la filiere (FR)','Nom en arabe (AR)','Niveau','Duree (annees)','Date creation (JJ/MM/AAAA)','Statut (active/suspendue)','Secteur','Type formation']];
     const exemple=[
-      ['Développement Digital','التطوير الرقمي','Technicien Spécialisé','2',new Date().toISOString().split('T')[0],'active'],
-      ['Gestion des Entreprises','تدبير المقاولات','Technicien','2',new Date().toISOString().split('T')[0],'active'],
-      ['Comptabilité','المحاسبة','Qualification','2',new Date().toISOString().split('T')[0],'active']
+      ['Développement Digital','التطوير الرقمي','Technicien Spécialisé','2',todayFr,'active','Technologies de l\'Information et de la Communication','Cours du Jour'],
+      ['Gestion des Entreprises','تدبير المقاولات','Technicien','2',todayFr,'active','Commerce et Gestion','Cours du Jour'],
+      ['Comptabilité','المحاسبة','Qualification','2',todayFr,'active','Commerce et Gestion','Cours du Soir']
     ];
     const info=[
       ['Instructions :'],
       ['1- Niveau : Technicien Specialise, Technicien, Qualification ou Specialisation'],
       ['2- Duree en annees entieres (1, 2 ou 3)'],
       ['3- Statut: active ou suspendue'],
-      ['4- Le niveau en arabe est calcule automatiquement']
+      ['4- Dates au format JJ/MM/AAAA (ex: 01/09/2024)'],
+      ['5- Type formation: Cours du Jour, Cours du Soir, Alternance ou A distance'],
+      ['6- Le niveau en arabe est calcule automatiquement']
     ];
     ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,[''],...info]);
-    ws['!cols']=[{wch:28},{wch:26},{wch:24},{wch:16},{wch:24},{wch:22}];
+    ws['!cols']=[{wch:28},{wch:26},{wch:24},{wch:16},{wch:22},{wch:22},{wch:36},{wch:20}];
 
   } else if(type==='modules'){
     name='Modele_Modules';
@@ -8444,20 +8461,30 @@ function dlTemplate(type) {
 // IMPORTER DEPUIS EXCEL
 // ============================================================
 function toDateStr(v){
-  // Convertit n'importe quelle valeur date en string AAAA-MM-JJ
-  if(!v) return null;
+  // Convertit n'importe quelle valeur date en string AAAA-MM-JJ pour la BDD
+  if(!v && v!==0) return null;
+  if(typeof v === 'number'){
+    // Numéro de série Excel → Date
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    if(!isNaN(d)) return d.toISOString().split('T')[0];
+    return null;
+  }
   if(typeof v === 'string'){
     const s=v.trim();
     if(!s) return null;
     // Déjà au bon format AAAA-MM-JJ
     if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    // Format DD/MM/YYYY
-    const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-    if(m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    // Format JJ/MM/AAAA ou JJ-MM-AAAA (format français)
+    const mFr=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if(mFr) return `${mFr[3]}-${mFr[2].padStart(2,'0')}-${mFr[1].padStart(2,'0')}`;
+    // Format MM/DD/YYYY (américain, au cas où)
+    const mUs=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(mUs && parseInt(mUs[1])<=12) return `${mUs[3]}-${mUs[1].padStart(2,'0')}-${mUs[2].padStart(2,'0')}`;
     return s;
   }
   if(v instanceof Date){
-    return v.toISOString().split('T')[0];
+    if(!isNaN(v)) return v.toISOString().split('T')[0];
+    return null;
   }
   return null;
 }
@@ -8492,7 +8519,7 @@ async function importExcel(type, input) {
             spec: (r['Spécialité']||'').trim(),
             email: (r['Email']||'').trim(),
             tel: (r['Téléphone']||'').toString().trim(),
-            drecr: toDateStr(r['Date recrutement (AAAA-MM-JJ)'])||null,
+            drecr: toDateStr(r['Date recrutement (JJ/MM/AAAA)']||r['Date recrutement (AAAA-MM-JJ)'])||null,
             actif: 1
           };
           try {
@@ -8532,13 +8559,17 @@ async function importExcel(type, input) {
             nom_ar: (r['Nom (AR) الاسم العائلي']||r['Nom AR']||'').trim()||null,
             prenom_ar: (r['Prénom (AR) الاسم الشخصي']||r['Prénom AR']||'').trim()||null,
             cin, ninsc,
-            ddn: toDateStr(r['Date naissance (AAAA-MM-JJ)']),
+            ddn: toDateStr(r['Date naissance (JJ/MM/AAAA)']||r['Date naissance (AAAA-MM-JJ)']),
             lieu_naissance: (r['Lieu naissance (FR)']||r['Lieu naissance']||'').trim()||null,
             lieu_naissance_ar: (r['Lieu naissance (AR) مكان الازدياد']||r['Lieu naissance AR']||'').trim()||null,
-            dinsc: toDateStr(r['Date inscription (AAAA-MM-JJ)']),
+            dinsc: toDateStr(r['Date inscription (JJ/MM/AAAA)']||r['Date inscription (AAAA-MM-JJ)']),
             anneeform: parseInt(r['Année formation (1/2/3)'])||1,
             email: (r['Email']||'').trim(),
             tel: (r['Téléphone']||'').toString().trim(),
+            niveau_scolaire: (r['Niveau scolaire']||'').trim()||null,
+            passerelle: ['o','oui','1','true'].includes((r['Passerelle (O/N)']||'').toString().trim().toLowerCase()),
+            redoublant: ['o','oui','1','true'].includes((r['Redoublant (O/N)']||'').toString().trim().toLowerCase()),
+            adresse: (r['Adresse']||'').trim()||null,
             fiid: fi?fi.id:null,
             gid: gr?gr.id:null,
             as: asVal
@@ -8573,10 +8604,12 @@ async function importExcel(type, input) {
             nom_ar:(r['Nom en arabe (AR)']||'').trim()||null,
             niv,
             niv_ar:NIVO_AR[niv]||niv,
-            dur:parseInt(r['Durée (années)'])||2,
-            duree:parseInt(r['Durée (années)'])||2,
-            date_creation:toDateStr(r['Date création (AAAA-MM-JJ)'])||new Date().toISOString().split('T')[0],
-            statut_fi:(r['Statut (active/suspendue)']||'active').trim().toLowerCase()||'active'
+            dur:parseInt(r['Durée (années)']||r['Duree (annees)'])||2,
+            duree:parseInt(r['Durée (années)']||r['Duree (annees)'])||2,
+            date_creation:toDateStr(r['Date creation (JJ/MM/AAAA)']||r['Date création (AAAA-MM-JJ)']||r['Date création (JJ/MM/AAAA)'])||new Date().toISOString().split('T')[0],
+            statut_fi:(r['Statut (active/suspendue)']||'active').trim().toLowerCase()||'active',
+            secteur:(r['Secteur']||'').trim()||null,
+            type_formation:(r['Type formation']||r['Type Formation']||'Cours du Jour').trim()||'Cours du Jour'
           };
           try{
             if(SUPA_KEY&&SUPA_KEY.length>=20){
