@@ -466,6 +466,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                 <input class="sb" id="stag-search" placeholder="🔍 Nom / CIN / N° Insc..." oninput="rStagiaires()">
                 <button class="btn btn-s btn-sm" id="btn-addstag" onclick="openAddStag()">+ Inscrire</button>
                 <button class="btn btn-s btn-sm" onclick="printTable('stagiaires')">🖨️ Imprimer</button>
+                <button class="btn btn-s btn-sm" onclick="printEtatInscriptions()" title="État des inscriptions officiel (modèle Ministère)">📋 État inscriptions</button>
                 <button class="btn btn-s btn-sm" onclick="exportExcel('stagiaires')">📊 Excel</button>
                 <button class="btn btn-s btn-sm" onclick="dlTemplate('stagiaires')" title="Télécharger modèle Excel">📥 Modèle</button>
                 <label class="btn btn-s btn-sm" style="cursor:pointer" title="Importer depuis Excel">📤 Importer<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel('stagiaires',this)"></label>
@@ -1041,6 +1042,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="fr"><div class="fg"><label>Année de formation</label><select id="s-anneeform"><option value="1">1ère Année</option><option value="2">2ème Année</option><option value="3">3ème Année</option></select></div><div class="fg"></div></div>
     <div class="fr"><div class="fg"><label>Date d'inscription</label><input type="date" id="s-dinsc"></div><div class="fg"><label>Année scolaire</label><select id="s-as"><option value="">-- Sélectionner --</option></select></div></div>
     <div class="fr"><div class="fg"><label>Email</label><input type="email" id="s-email"></div><div class="fg"><label>Téléphone</label><input id="s-tel"></div></div>
+    <div class="fr"><div class="fg"><label>Adresse</label><input id="s-adresse" placeholder="Ex: N° 5 Résidence Al Wiam, Meknès"></div></div>
+    <div class="fr">
+      <div class="fg"><label>Niveau scolaire</label><select id="s-niv-sco"><option value="">-- Sélectionner --</option><option value="Baccalauréat">Baccalauréat</option><option value="Bac+2">Bac+2</option><option value="Licence">Licence</option><option value="Master">Master</option><option value="BEP">BEP</option><option value="CAP">CAP</option><option value="Autre">Autre</option></select></div>
+      <div class="fg" style="display:flex;gap:18px;align-items:flex-end;padding-bottom:4px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="s-passerelle" style="width:15px;height:15px"> Passerelle (P)</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="s-redoublant" style="width:15px;height:15px"> Redoublant (R)</label>
+      </div>
+    </div>
     <div class="fr"><div class="fg"><label>Groupe</label><select id="s-grp"><option value="">--</option></select></div><div class="fg"><label>Filière</label><select id="s-fi"><option value="">--</option></select></div></div>
     <div class="md-foot"><button class="btn btn-s btn-sm" onclick="closeMod('mod-stag')">Annuler</button><button class="btn btn-p btn-sm" onclick="saveStag()">Inscrire</button></div>
   </div>
@@ -1073,6 +1082,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="fr">
       <div class="fg"><label>Durée (années)</label><input type="number" id="fi-dur" min="1" max="5" value="2"></div>
       <div class="fg"><label>Statut</label><select id="fi-statut"><option value="active">✅ Active</option><option value="suspendue">⏸️ Suspendue</option><option value="supprimee">❌ Supprimée</option></select></div>
+    <div class="fr">
+      <div class="fg"><label>Secteur</label><input id="fi-secteur" placeholder="Ex: Bâtiment et Travaux Publics"></div>
+      <div class="fg"><label>Type de formation</label><select id="fi-typeform"><option value="Cours du Jour">Cours du Jour</option><option value="Cours du Soir">Cours du Soir</option><option value="Alternance">Alternance</option><option value="À distance">À distance</option></select></div>
+    </div>
     </div>
     <div class="fr">
       <div class="fg"><label>Date de création</label><input type="date" id="fi-dcreation"></div>
@@ -2461,6 +2474,9 @@ function openAddStag(){
   populateStagSels();
   sv('s-id',''); sv('s-nom',''); sv('s-pre',''); sv('s-nom-ar',''); sv('s-pre-ar',''); sv('s-cin',''); sv('s-ninsc','');
   sv('s-ddn',''); sv('s-lieu-naissance',''); sv('s-lieu-ar',''); sv('s-email',''); sv('s-tel',''); sv('s-dinsc',new Date().toISOString().split('T')[0]);
+  sv('s-adresse',''); setSel('s-niv-sco','');
+  if(g('s-passerelle')) g('s-passerelle').checked=false;
+  if(g('s-redoublant')) g('s-redoublant').checked=false;
   setSel('s-anneeform','1'); setSel('s-as',DB.anneeCourante);
   openMod('mod-stag');
 }
@@ -2471,6 +2487,9 @@ function openEditStag(id){
   sv('s-id',s.id); sv('s-nom',s.nom); sv('s-pre',s.prenom); sv('s-nom-ar',s.nom_ar||''); sv('s-pre-ar',s.prenom_ar||''); sv('s-cin',s.cin);
   sv('s-ninsc',s.ninsc||''); sv('s-ddn',s.ddn||''); sv('s-lieu-naissance',s.lieu_naissance||''); sv('s-lieu-ar',s.lieu_naissance_ar||''); sv('s-dinsc',s.dinsc||'');
   sv('s-email',s.email||''); sv('s-tel',s.tel||'');
+  sv('s-adresse',s.adresse||''); setSel('s-niv-sco',s.niveau_scolaire||'');
+  if(g('s-passerelle')) g('s-passerelle').checked=!!s.passerelle;
+  if(g('s-redoublant')) g('s-redoublant').checked=!!s.redoublant;
   setSel('s-grp',s.gid); setSel('s-fi',s.fiid);
   setSel('s-anneeform',s.anneeform||1); setSel('s-as',s.as||DB.anneeCourante);
   openMod('mod-stag');
@@ -2483,6 +2502,10 @@ async function saveStag(){
     ddn:gv('s-ddn')||null,lieu_naissance:gv('s-lieu-naissance')||null,lieu_naissance_ar:gv('s-lieu-ar')||null,dinsc:gv('s-dinsc')||null,anneeform:parseInt(g('s-anneeform').value)||1,
     as:asVal,
     email:gv('s-email'),tel:gv('s-tel'),
+    adresse:gv('s-adresse')||null,
+    niveau_scolaire:gv('s-niv-sco')||null,
+    passerelle:g('s-passerelle')?.checked?true:false,
+    redoublant:g('s-redoublant')?.checked?true:false,
     gid:parseInt(g('s-grp').value)||null,fiid:parseInt(g('s-fi').value)||null
   };
   if(!d.nom){showAl('al-stag','⚠️ Le nom est obligatoire','var(--rd)');return;}
@@ -2885,10 +2908,10 @@ function rGroupes(){
     <td class="tda"><button class="btn btn-s btn-sm" onclick="openEditGrp(${gr.id})">Modifier</button><button class="btn btn-d btn-sm" onclick="delGrp(${gr.id})">Suppr.</button></td></tr>`;
   }).join('')||er(4);
 }
-function openAddFi(){g('mfi-title').textContent='Ajouter une filière';sv('fi-id','');sv('fi-nom','');sv('fi-nom-ar','');sv('fi-dur',2);sv('fi-dcreation',new Date().toISOString().split('T')[0]);sv('fi-dsuppression','');setSel('fi-statut','active');updateNivoAr();openMod('mod-fi');}
-function openEditFi(id){const fi=DB.filieres.find(x=>x.id==id);if(!fi)return;g('mfi-title').textContent="Modifier la filière";sv('fi-id',fi.id);sv('fi-nom',fi.nom);sv('fi-nom-ar',fi.nom_ar||'');setSel('fi-niv',fi.niv);sv('fi-dur',fi.dur||2);sv('fi-dcreation',fi.date_creation||'');sv('fi-dsuppression',fi.date_suppression||'');setSel('fi-statut',fi.statut_fi||'active');updateNivoAr();openMod('mod-fi');}
+function openAddFi(){g('mfi-title').textContent='Ajouter une filière';sv('fi-id','');sv('fi-nom','');sv('fi-nom-ar','');sv('fi-dur',2);sv('fi-dcreation',new Date().toISOString().split('T')[0]);sv('fi-dsuppression','');setSel('fi-statut','active');sv('fi-secteur','');setSel('fi-typeform','Cours du Jour');updateNivoAr();openMod('mod-fi');}
+function openEditFi(id){const fi=DB.filieres.find(x=>x.id==id);if(!fi)return;g('mfi-title').textContent="Modifier la filière";sv('fi-id',fi.id);sv('fi-nom',fi.nom);sv('fi-nom-ar',fi.nom_ar||'');setSel('fi-niv',fi.niv);sv('fi-dur',fi.dur||2);sv('fi-dcreation',fi.date_creation||'');sv('fi-dsuppression',fi.date_suppression||'');setSel('fi-statut',fi.statut_fi||'active');sv('fi-secteur',fi.secteur||'');setSel('fi-typeform',fi.type_formation||'Cours du Jour');updateNivoAr();openMod('mod-fi');}
 async function saveFi(){
-  const id=gv('fi-id'),niv=gv('fi-niv'),d={nom:gv('fi-nom'),nom_ar:gv('fi-nom-ar')||'',niv,niv_ar:NIVO_AR[niv]||niv,dur:parseInt(gv('fi-dur'))||2,duree:parseInt(gv('fi-dur'))||2,date_creation:gv('fi-dcreation')||null,date_suppression:gv('fi-dsuppression')||null,statut_fi:gv('fi-statut')||'active'};
+  const id=gv('fi-id'),niv=gv('fi-niv'),d={nom:gv('fi-nom'),nom_ar:gv('fi-nom-ar')||'',niv,niv_ar:NIVO_AR[niv]||niv,dur:parseInt(gv('fi-dur'))||2,duree:parseInt(gv('fi-dur'))||2,date_creation:gv('fi-dcreation')||null,date_suppression:gv('fi-dsuppression')||null,statut_fi:gv('fi-statut')||'active',secteur:gv('fi-secteur')||null,type_formation:gv('fi-typeform')||'Cours du Jour'};
   if(!d.nom)return;
   try {
     if(SUPA_KEY&&SUPA_KEY.length>=20){
@@ -5657,6 +5680,154 @@ function printListeInscrits(){
   ${html_body}
   <script>window.addEventListener('load',function(){setTimeout(function(){window.print();},400);});<\/script>
   </body></html>`;
+  _openPrintWin(html);
+}
+
+// ============================================================
+// ÉTAT DES INSCRIPTIONS — Modèle officiel Ministère
+// ============================================================
+function printEtatInscriptions(){
+  const e = DB.etab||{};
+  const asFilter = (g('stag-as-filter')||{}).value || DB.anneeCourante || '';
+  const fiFilter = parseInt((g('stag-fi-filter')||{}).value) || null;
+  const dateImp = new Date().toLocaleDateString('fr-MA');
+
+  // Regrouper par filière
+  const filieres = fiFilter
+    ? DB.filieres.filter(f=>f.id===fiFilter)
+    : DB.filieres.filter(f=>DB.stagiaires.some(s=>s.fiid==f.id&&(!asFilter||s.as===asFilter||s.as_annee===asFilter)));
+
+  if(!filieres.length){alert('Aucun stagiaire à afficher.');return;}
+
+  const fmtDate = d => {
+    if(!d) return '—';
+    const p=String(d).split('-');
+    return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;
+  };
+
+  let pages = '';
+
+  filieres.forEach(fi => {
+    const stags = DB.stagiaires
+      .filter(s => s.fiid==fi.id && (!asFilter||s.as===asFilter||s.as_annee===asFilter))
+      .sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+    if(!stags.length) return;
+
+    // Regrouper par anneeform
+    const annees = [...new Set(stags.map(s=>s.anneeform||1))].sort();
+
+    annees.forEach(annee => {
+      const ss = stags.filter(s=>(s.anneeform||1)==annee);
+      const classeLabel = annee===1?'1ère année':`${annee}ème année`;
+      const secteur = fi.secteur || '—';
+      const typeForm = fi.type_formation || 'Cours du Jour';
+
+      let rows = '';
+      ss.forEach((s,i) => {
+        const p = s.passerelle ? 'O' : 'N';
+        const r = s.redoublant ? 'O' : 'N';
+        rows += `<tr>
+          <td>${s.ninsc||'—'}</td>
+          <td style="font-weight:600">${(s.nom||'').toUpperCase()} ${s.prenom||''}</td>
+          <td style="font-family:monospace">${s.cin||'—'}</td>
+          <td>${fmtDate(s.dinsc)}</td>
+          <td>${s.niveau_scolaire||'—'}</td>
+          <td style="text-align:center;font-weight:700">${p}</td>
+          <td style="text-align:center;font-weight:700">${r}</td>
+          <td>${s.adresse||''}</td>
+        </tr>`;
+      });
+
+      pages += `
+      <div class="page">
+        <!-- EN-TÊTE OFFICIEL -->
+        <div class="entete-min">
+          <div class="min-gauche">
+            <div class="min-titre">Ministère de l'Education Nationale et de la formation Professionnelle</div>
+            <div class="min-deleg">Délégation ${e.ville||'Meknes'}</div>
+          </div>
+        </div>
+
+        <h1 class="titre-doc">Etat des inscriptions</h1>
+
+        <table class="info-etab">
+          <tr>
+            <td class="ilbl">Etablissement :</td>
+            <td class="ival">${e.nom||'—'}</td>
+            <td class="ilbl">Année Scolaire :</td>
+            <td class="ival">${asFilter||'—'}</td>
+          </tr>
+          <tr>
+            <td class="ilbl">Secteur :</td>
+            <td class="ival">${secteur}</td>
+            <td class="ilbl">Classe :</td>
+            <td class="ival">${classeLabel}</td>
+          </tr>
+          <tr>
+            <td class="ilbl">Filières :</td>
+            <td class="ival">${fi.nom||'—'}</td>
+            <td class="ilbl">Type Formation</td>
+            <td class="ival">${typeForm}</td>
+          </tr>
+        </table>
+
+        <table class="tbl-inscrits">
+          <thead>
+            <tr>
+              <th>N°inscription</th>
+              <th>Nom &amp; prénom</th>
+              <th>N°CIN</th>
+              <th>Date Inscrip.</th>
+              <th>Niveau Scolaire</th>
+              <th>P</th>
+              <th>R</th>
+              <th>Adresse</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+
+        <div class="pied-page">
+          <div class="nb-stag">Nombre Stagiaires : <b>${ss.length}</b></div>
+          <div class="date-imp">Le ${dateImp} &nbsp;&nbsp;&nbsp;&nbsp; Pages</div>
+        </div>
+      </div>
+      <div class="page-break"></div>`;
+    });
+  });
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>État des Inscriptions</title>
+  <style>
+    @page{size:A4 landscape;margin:10mm 8mm}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+    body{font-family:"Times New Roman",Arial,serif;font-size:9px;background:#fff;color:#000;padding:6mm}
+    .page{width:100%;margin-bottom:8mm}
+    .page-break{page-break-after:always}
+    .entete-min{border:1px solid #000;padding:4px 8px;margin-bottom:4px}
+    .min-titre{font-size:10px;font-weight:700;text-align:center}
+    .min-deleg{border:1px solid #666;display:inline-block;padding:2px 16px;margin-top:4px;font-size:9px}
+    h1.titre-doc{text-align:center;font-size:14px;font-weight:900;text-decoration:underline;margin:6px 0 8px;letter-spacing:.5px}
+    .info-etab{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:9px}
+    .info-etab td{padding:3px 6px}
+    .ilbl{font-weight:700;white-space:nowrap;width:110px}
+    .ival{border:1px solid #555;padding:2px 8px;min-width:200px}
+    .tbl-inscrits{width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:6px}
+    .tbl-inscrits th{border:1px solid #000;padding:4px 5px;background:#e8e8e8;font-weight:700;text-align:center;font-size:8px}
+    .tbl-inscrits td{border:1px solid #999;padding:3px 5px;vertical-align:middle}
+    .tbl-inscrits tr:nth-child(even){background:#f9f9f9}
+    .pied-page{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:8.5px;font-weight:700}
+    .nb-stag{border:1px solid #333;padding:3px 12px}
+    .date-imp{color:#555}
+    @media print{
+      button{display:none!important}
+      .page-break{page-break-after:always}
+    }
+  </style></head><body>
+  <button onclick="window.print()" style="margin-bottom:10px;padding:7px 20px;background:#1a1a2e;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer">🖨️ Imprimer / Enregistrer PDF</button>
+  ${pages}
+  <script>window.addEventListener('load',function(){setTimeout(function(){window.print();},500);});<\/script>
+  </body></html>`;
+
   _openPrintWin(html);
 }
 
