@@ -1746,7 +1746,7 @@ async function doLogin() {
       const f=DB.formateurs.find(x=>
         (CU.fid && x.id==CU.fid)||
         (CU.cin && x.cin && norm(x.cin)===norm(CU.cin))||
-        (norm(x.nom)===norm(CU.nom) && norm(x.prenom)===norm(CU.prenom))
+        ((CU.nom&&CU.prenom)&&norm(x.nom)===norm(CU.nom) && norm(x.prenom)===norm(CU.prenom))
       );
       if(f){ CU.fid=f.id; dbg('✅ Liaison formateur: '+f.prenom+' '+f.nom+' fid='+f.id,'#5aac8c'); }
       else  { dbg('⚠️ Aucun formateur trouvé: nom='+CU.nom+' prenom='+CU.prenom+' cin='+(CU.cin||'—')+' fid='+(CU.fid||'—'),'#ffaa44'); }
@@ -1756,7 +1756,7 @@ async function doLogin() {
         (CU.sid  && x.id==CU.sid)||
         (CU.cin  && x.cin   && norm(x.cin)  ===norm(CU.cin))||
         (CU.ninsc && x.ninsc && norm(x.ninsc)===norm(CU.ninsc))||
-        (norm(x.nom)===norm(CU.nom) && norm(x.prenom)===norm(CU.prenom))
+        ((CU.nom&&CU.prenom)&&norm(x.nom)===norm(CU.nom) && norm(x.prenom)===norm(CU.prenom))
       );
       if(s){ CU.sid=s.id; dbg('✅ Liaison stagiaire: '+s.prenom+' '+s.nom+' sid='+s.id,'#5aac8c'); }
       else  { dbg('⚠️ Aucun stagiaire trouvé pour CU: nom='+CU.nom+' prenom='+CU.prenom+' cin='+(CU.cin||'—')+' ninsc='+(CU.ninsc||'—'),'#ffaa44'); }
@@ -1902,9 +1902,11 @@ const PT = {
 };
 
 function setupApp() {
-  g('unm').textContent = CU.prenom+' '+CU.nom;
-  g('url').textContent = {admin:'Administrateur',formateur:'Formateur',stagiaire:'Stagiaire'}[CU.role];
-  g('uav').textContent = (CU.prenom[0]||'')+(CU.nom[0]||'');
+  const _pre = CU.prenom||'';
+  const _nom = CU.nom||'';
+  g('unm').textContent = (_pre+' '+_nom).trim()||CU.username||'Utilisateur';
+  g('url').textContent = {admin:'Administrateur',formateur:'Formateur',stagiaire:'Stagiaire'}[CU.role]||CU.role||'';
+  g('uav').textContent = (_pre&&_pre.length?_pre[0].toUpperCase():'')+(_nom&&_nom.length?_nom[0].toUpperCase():'U');
   // Init annee scolaire selector
   const asel = g('annee-sel');
   asel.innerHTML = DB.anneesScolaires.map(a=>`<option value="${a}" ${a===DB.anneeCourante?'selected':''}>${a}</option>`).join('');
