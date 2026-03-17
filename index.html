@@ -1006,7 +1006,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="md-title" id="mform-title">Formateur</div><div class="md-sub">Informations personnelles et professionnelles</div>
     <input type="hidden" id="f-id">
     <div class="fr"><div class="fg"><label>Nom</label><input id="f-nom" placeholder="Nom"></div><div class="fg"><label>Prénom</label><input id="f-pre" placeholder="Prénom"></div></div>
-    <div class="fr"><div class="fg"><label>CIN</label><input id="f-cin" placeholder="AB123456"></div><div class="fg"><label>Type</label><select id="f-type"><option value="permanent">Formateur Permanent</option><option value="intervenant">Intervenant</option></select></div></div>
+    <div class="fr"><div class="fg"><label>CIN</label><input id="f-cin" placeholder="AB123456"></div><div class="fg"><label>Type</label><select id="f-type"><option value="permanent">Permanent</option><option value="intervenant">Intervenant</option><option value="autre">Autre</option></select></div></div>
     <div class="fr"><div class="fg"><label>Email</label><input type="email" id="f-email" placeholder="email@edu.ma"></div><div class="fg"><label>Téléphone</label><input id="f-tel" placeholder="06xxxxxxxx"></div></div>
     <div class="fg"><label>Spécialité</label><input id="f-spec" placeholder="Ex: Développement Web"></div>
     <div class="fr"><div class="fg"><label>Date de recrutement</label><input type="date" id="f-drecr"></div><div class="fg"><label>Statut</label><select id="f-actif" onchange="g('fg-dinact').style.display=this.value==='0'?'block':'none'"><option value="1">✅ Actif</option><option value="0">❌ Non actif</option></select></div></div>
@@ -7653,32 +7653,96 @@ function dlTemplate(type) {
 
   if(type==='stagiaires'){
     name='Modele_Stagiaires';
-    const headers=[['N° Inscription','Nom','Prénom','CIN','Date naissance (AAAA-MM-JJ)','Lieu naissance','Date inscription (AAAA-MM-JJ)','Année formation (1/2/3)','Email','Téléphone','Filière (nom exact)','Groupe (nom exact)','Année scolaire']];
-    const exemple=[['S-2024-001','ALAOUI','Mohammed','AB123456','2000-05-15','Meknès','2024-09-01','1','m.alaoui@email.com','0600000000','Informatique','G1','2024-2025']];
-    const info=[['⚠️ Instructions :'],['- Ne pas modifier les en-têtes (ligne 1)'],['- Filière et Groupe doivent correspondre exactement aux noms dans l\'application'],['- Date format: AAAA-MM-JJ (ex: 2000-05-15)'],['- Année formation: 1, 2 ou 3'],['- Laisser vide si info non disponible']];
-    ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,...[''],  ...info]);
-    ws['!cols']=[{wch:18},{wch:15},{wch:15},{wch:12},{wch:22},{wch:15},{wch:22},{wch:20},{wch:25},{wch:14},{wch:20},{wch:12},{wch:14}];
+    const headers=[[
+      'N° Inscription','Nom (FR)','Prénom (FR)',
+      'Nom (AR) الاسم العائلي','Prénom (AR) الاسم الشخصي',
+      'CIN','Date naissance (AAAA-MM-JJ)',
+      'Lieu naissance (FR)','Lieu naissance (AR) مكان الازدياد',
+      'Date inscription (AAAA-MM-JJ)','Année formation (1/2/3)',
+      'Email','Téléphone','Filière (nom exact)','Groupe (nom exact)','Année scolaire'
+    ]];
+    const exemple=[[
+      'S-2024-001','ALAOUI','Mohammed','العلوي','محمد',
+      'AB123456','2000-05-15','Meknès','مكناس',
+      '2024-09-01','1','m.alaoui@email.com','0600000000',
+      'Informatique','G1','2024-2025'
+    ]];
+    const info=[
+      ['⚠️ Instructions :'],
+      ['- Ne pas modifier les en-têtes (ligne 1)'],
+      ['- Nom/Prénom AR : facultatifs, utilisés dans les documents officiels'],
+      ['- Filière et Groupe : correspondre exactement aux noms dans l'application'],
+      ['- Date format: AAAA-MM-JJ (ex: 2000-05-15)'],
+      ['- Année formation: 1, 2 ou 3'],
+      ['- Laisser vide si information non disponible']
+    ];
+    ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,[''],...info]);
+    ws['!cols']=[{wch:16},{wch:14},{wch:14},{wch:20},{wch:20},{wch:12},{wch:22},{wch:16},{wch:22},{wch:22},{wch:18},{wch:24},{wch:13},{wch:20},{wch:14},{wch:14}];
+
   } else if(type==='formateurs'){
     name='Modele_Formateurs';
-    const headers=[['Nom','Prénom','CIN','Type (permanent/intervenant)','Spécialité','Email','Téléphone']];
-    const exemple=[['BENNANI','Karim','CD789012','permanent','Informatique','k.bennani@email.com','0611111111'],['TAZI','Sara','EF345678','intervenant','Mathématiques','s.tazi@email.com','0622222222']];
-    const info=[['⚠️ Instructions :'],['- Ne pas modifier les en-têtes (ligne 1)'],['- Type: écrire exactement "permanent" ou "intervenant"'],['- Tous les champs sauf Email et Tél. sont obligatoires']];
-    ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,...[''],...info]);
-    ws['!cols']=[{wch:15},{wch:15},{wch:12},{wch:25},{wch:20},{wch:25},{wch:14}];
+    const headers=[['Nom','Prénom','CIN','Type (permanent/intervenant/autre)','Spécialité','Email','Téléphone','Date recrutement (AAAA-MM-JJ)']];
+    const exemple=[
+      ['BENNANI','Karim','CD789012','permanent','Informatique','k.bennani@email.com','0611111111','2020-09-01'],
+      ['TAZI','Sara','EF345678','intervenant','Mathématiques','s.tazi@email.com','0622222222','2022-01-15'],
+      ['KHIYAL','Adil','D453566','autre','Langues','a.khiyal@email.com','0633333333','2021-06-01']
+    ];
+    const info=[
+      ['⚠️ Instructions :'],
+      ['- Ne pas modifier les en-têtes (ligne 1)'],
+      ['- Type: écrire exactement "permanent", "intervenant" ou "autre"'],
+      ['- CIN obligatoire (détection des doublons)'],
+      ['- Tous les champs sauf Email, Tél. et Date recrutement sont obligatoires']
+    ];
+    ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,[''],...info]);
+    ws['!cols']=[{wch:15},{wch:15},{wch:12},{wch:30},{wch:20},{wch:25},{wch:14},{wch:24}];
+
+  } else if(type==='filieres'){
+    name='Modele_Filieres';
+    const headers=[['Nom de la filière (FR)','Nom en arabe (AR)','Niveau','Durée (années)','Date création (AAAA-MM-JJ)','Statut (active/suspendue)']];
+    const exemple=[
+      ['Développement Digital','التطوير الرقمي','Technicien Spécialisé','2',new Date().toISOString().split('T')[0],'active'],
+      ['Gestion des Entreprises','تدبير المقاولات','Technicien','2',new Date().toISOString().split('T')[0],'active'],
+      ['Comptabilité','المحاسبة','Qualification','2',new Date().toISOString().split('T')[0],'active']
+    ];
+    const info=[
+      ['⚠️ Instructions :'],
+      ['- Niveau: "Technicien Spécialisé", "Technicien", "Qualification" ou "Spécialisation"'],
+      ['- Durée en années entières (1, 2 ou 3)'],
+      ['- Statut: "active" ou "suspendue"'],
+      ['- Le niveau en arabe est calculé automatiquement']
+    ];
+    ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,[''],...info]);
+    ws['!cols']=[{wch:28},{wch:26},{wch:24},{wch:16},{wch:24},{wch:22}];
+
   } else if(type==='modules'){
     name='Modele_Modules';
-    const headers=[['Nom du module','Code','Filière (nom exact)','Coefficient','% CC','% TH','% TP/PR','% Projet','Nb CC','Nb TH','Nb TP/PR']];
-    const exemple=[['Algorithmique','ALGO','Informatique','2','30','40','30','0','2','1','1'],['Mathématiques','MATH','Informatique','3','40','60','0','0','2','2','0']];
-    const info=[['⚠️ Instructions :'],['- % CC + % TH + % TP + % Projet doit = 100'],['- Filière doit correspondre exactement au nom dans l\'application'],['- Coefficient: nombre entier (1, 2, 3...)']];
-    ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,...[''],...info]);
-    ws['!cols']=[{wch:22},{wch:10},{wch:20},{wch:12},{wch:8},{wch:8},{wch:10},{wch:10},{wch:8},{wch:8},{wch:10}];
+    const headers=[['Nom du module','Code','Filière (nom exact ou vide=toutes)','Année (1/2/3 ou vide=toutes)','Coefficient','% CC','% TH','% TP/PR','% Projet','Nb CC','Nb TH','Nb TP/PR']];
+    const exemple=[
+      ['Algorithmique','ALGO','Informatique','1','2','30','40','30','0','2','1','1'],
+      ['Mathématiques','MATH','','','3','40','60','0','0','2','2','0'],
+      ['Anglais','ANG','','','2','30','40','30','0','2','1','1']
+    ];
+    const info=[
+      ['⚠️ Instructions :'],
+      ['- % CC + % TH + % TP + % Projet doit = 100'],
+      ['- Filière vide = module transversal (toutes filières)'],
+      ['- Année vide = module dispensé toutes les années'],
+      ['- Coefficient: nombre entier (1, 2, 3...)']
+    ];
+    ws = XLSX.utils.aoa_to_sheet([...headers,...exemple,[''],...info]);
+    ws['!cols']=[{wch:22},{wch:10},{wch:24},{wch:20},{wch:12},{wch:8},{wch:8},{wch:10},{wch:10},{wch:8},{wch:8},{wch:10}];
   }
 
-  // Style ligne d'en-tête
+  if(!ws){alert('Type non reconnu');return;}
+
+  // Style en-tête doré + ligne exemple colorée
   const range = XLSX.utils.decode_range(ws['!ref']);
   for(let C=range.s.c; C<=range.e.c; C++){
-    const cell = ws[XLSX.utils.encode_cell({r:0,c:C})];
-    if(cell) cell.s = {font:{bold:true},fill:{fgColor:{rgb:'C8935A'}},alignment:{wrapText:true}};
+    const h=ws[XLSX.utils.encode_cell({r:0,c:C})];
+    if(h) h.s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'C8935A'}},alignment:{wrapText:true,horizontal:'center'}};
+    const ex=ws[XLSX.utils.encode_cell({r:1,c:C})];
+    if(ex) ex.s={fill:{fgColor:{rgb:'FFF3E0'}}};
   }
 
   XLSX.utils.book_append_sheet(wb, ws, 'Données');
