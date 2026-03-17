@@ -1993,8 +1993,30 @@ function go(v) {
 }
 
 function rv(v) {
-  const fn = {dashboard:rDash,users:rUsers,administration:rAdministration,formateurs:rFormateurs,stagiaires:rStagiaires,groupes:rGroupes,modules:rModules,salles:rSalles,emploi:rEdtView,notes:rNotesView,bulletins:rBulView,programme:rProgramme,planning:rPlanning,suivi:rSuivi,'compta-stag':rComptaStag,'compta-rh':rComptaRH,'compta-dep':rComptaDep,'mes-paiements':rMesPaiements,parametres:rParametres,statistiques:rStatistiques};
-  if(fn[v]) fn[v]();
+  const fns = {
+    dashboard:     ()=>rDash(),
+    users:         ()=>rUsers(),
+    administration:()=>rAdministration(),
+    formateurs:    ()=>rFormateurs(),
+    stagiaires:    ()=>rStagiaires(),
+    groupes:       ()=>rGroupes(),
+    modules:       ()=>rModules(),
+    salles:        ()=>rSalles(),
+    emploi:        ()=>rEdtView(),
+    notes:         ()=>rNotesView(),
+    bulletins:     ()=>rBulView(),
+    programme:     ()=>rProgramme(),
+    planning:      ()=>typeof rPlanning==='function'?rPlanning():null,
+    suivi:         ()=>rSuivi(),
+    'compta-stag': ()=>rComptaStag(),
+    'compta-rh':   ()=>rComptaRH(),
+    'compta-dep':  ()=>rComptaDep(),
+    'mes-paiements':()=>rMesPaiements(),
+    parametres:    ()=>rParametres(),
+    statistiques:  ()=>rStatistiques()
+  };
+  try{ if(fns[v]) fns[v](); }
+  catch(e){ console.error('rv('+v+'):', e); }
 }
 
 // ============================================================
@@ -4238,6 +4260,53 @@ function buildGanttPrint(fiid,annee,isReal){
   return html;
 }
 
+
+// ============================================================
+// PLANNING PRÉVISIONNEL & RÉALISATION — Navigation
+// ============================================================
+let PL_TAB = 'prev';
+
+function switchPlanTab(tab){
+  PL_TAB = tab;
+  const bPrev=g('pl-tab-prev'), bReal=g('pl-tab-real');
+  if(bPrev){bPrev.style.background=tab==='prev'?'var(--ac)':'var(--sf2)';bPrev.style.color=tab==='prev'?'#fff':'var(--tx2)';}
+  if(bReal){bReal.style.background=tab==='real'?'var(--ac)':'var(--sf2)';bReal.style.color=tab==='real'?'#fff':'var(--tx2)';}
+  renderPlanning();
+}
+
+function rPlanning(){
+  const fiSel=g('pl-fi');
+  if(fiSel){
+    const cur=fiSel.value;
+    fiSel.innerHTML='<option value="">-- Filière --</option>'+DB.filieres.map(fi=>`<option value="${fi.id}">${fi.nom}</option>`).join('');
+    if(cur)fiSel.value=cur;
+    if(!fiSel.value&&DB.filieres.length===1)fiSel.value=DB.filieres[0].id;
+  }
+  const progFi=g('prog-fi');
+  if(progFi){
+    const cv=progFi.value;
+    progFi.innerHTML='<option value="">-- Filière --</option>'+DB.filieres.map(fi=>`<option value="${fi.id}">${fi.nom}</option>`).join('');
+    if(cv)progFi.value=cv;
+  }
+  renderPlanning();
+}
+
+function renderPlanning(){
+  const fiid=parseInt(g('pl-fi')?.value)||null;
+  const annee=parseInt(g('pl-annee')?.value)||1;
+  const cont=g('pl-gantt');
+  if(!cont)return;
+  if(!fiid){
+    cont.innerHTML='<div class="empty"><div class="empty-ic">📊</div><div class="empty-t">Sélectionnez une filière</div></div>';
+    return;
+  }
+  const progs=DB.programme.filter(p=>p.fiid==fiid&&p.annee==annee);
+  if(!progs.length){
+    cont.innerHTML='<div class="empty"><div class="empty-ic">📋</div><div class="empty-t">Aucun module planifié.<br>Cliquez "+ Ajouter module" pour commencer.</div></div>';
+    return;
+  }
+  cont.innerHTML=buildGanttHTML(progs, fiid, annee, PL_TAB==='real');
+}
 
 function buildGanttHTML(progs, fiid, annee, isReal){
   const MOIS_L=['Septembre','Octobre','Novembre','Décembre','Janvier','Février','Mars','Avril','Mai','Juin','Juillet'];
