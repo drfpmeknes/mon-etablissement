@@ -592,7 +592,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
             <div style="margin-left:auto;display:flex;gap:6px">
               <button class="btn btn-s btn-sm" id="btn-addprog2" onclick="openAddProg()">+ Ajouter module</button>
-              <button class="btn btn-p btn-sm" onclick="printGanttNew()">🖨️ Imprimer paysage</button>
+              <button class="btn btn-p btn-sm" onclick="printGanttNew(false)">🖨️ Imprimer A4</button>
+              <button class="btn btn-s btn-sm" onclick="printGanttNew(true)">📄 Exporter Word</button>
             </div>
           </div>
           <div id="pl-gantt" style="overflow-x:auto"></div>
@@ -4028,15 +4029,12 @@ function printGantt(){
 
 function buildGanttPrint(fiid,annee,isReal){
   const progs=DB.programme.filter(p=>(fiid?p.fiid==fiid:true)&&p.annee==annee);
-  if(!progs.length)return '<p>Aucune entree</p>';
+  if(!progs.length)return '<p style="color:#999;font-size:8px">Aucun module planifie</p>';
   const NCOLS=11;
-  // Largeurs optimisées pour A3 paysage (420mm total - marges = ~408mm utile)
-  // Module:80px, VH:30px, Form:55px, CC:22px, 11mois×20mm=220px, Taux:28px = ~435px → OK
-  const MW=80, VW=30, FW=55, CCW=22, COL=20, TW=28;
 
-  function moisIdxP(dateStr){
-    if(!dateStr)return -1;
-    const m=parseInt((dateStr||'').split('-')[1]||0);
+  function moisIdxP(d){
+    if(!d)return -1;
+    const m=parseInt((d||'').split('-')[1]||0);
     return GANTT_MOIS_NUM.indexOf(m);
   }
   function getVhR(mid){
@@ -4056,112 +4054,99 @@ function buildGanttPrint(fiid,annee,isReal){
     {bg:'#84CC16',dark:'#4D7C0F',cc:'#E9D5FF',th:'#BAE6FD',pr:'#FED7AA'},
   ];
 
-  let html=`<table>
+  // A4 paysage : 281mm utile
+  // Nom=50mm, VH=10mm, Form=22mm, CC=8mm, 11mois×17mm=187mm, Taux=10mm = 287mm ✅
+  let html=`<table style="border-collapse:collapse;width:281mm;table-layout:fixed">
   <colgroup>
-    <col class="cm"><col class="cv"><col class="cf"><col class="cc2">
-    ${Array(NCOLS).fill('').map(()=>'<col class="cs">').join('')}
-    <col class="ct">
+    <col style="width:50mm"><col style="width:10mm"><col style="width:22mm"><col style="width:8mm">
+    ${Array(NCOLS).fill('').map(()=>'<col style="width:17mm">').join('')}
+    <col style="width:10mm">
   </colgroup>
   <thead><tr>
-    <th style="text-align:left">Module</th>
-    <th>VH</th>
-    <th>Formateur</th>
-    <th>CC</th>
-    ${GANTT_MOIS.map(m=>`<th>${m}</th>`).join('')}
-    <th>%</th>
+    <th style="text-align:left;font-size:7px;padding:3px 4px">Module</th>
+    <th style="font-size:7px;padding:3px 2px">VH</th>
+    <th style="font-size:7px;padding:3px 2px">Formateur</th>
+    <th style="font-size:7px;padding:3px 2px">CC</th>
+    ${GANTT_MOIS.map(m=>`<th style="font-size:7px;padding:3px 1px">${m}</th>`).join('')}
+    <th style="font-size:7px;padding:3px 2px">%</th>
   </tr></thead><tbody>`;
 
   progs.forEach((p,idx)=>{
     const mod=DB.modules.find(x=>x.id==p.mid);
     const frm=DB.formateurs.find(x=>x.id==p.fid);
-    const col=GANTT_COLORS[idx%GANTT_COLORS.length];
-    const debIdx=dateToMoisIdx(p.deb);
-    const finIdx=dateToMoisIdx(p.fin);
+    const col=PCOLS[idx%PCOLS.length];
+    const debIdx=moisIdxP(p.deb);
+    const finIdx=moisIdxP(p.fin);
+    const vhTotal=p.vh||0;
+    const vhReel=isReal?Math.round(getVhR(p.mid)*10)/10:0;
+    const taux=isReal?(vhTotal>0?Math.min(Math.round(vhReel/vhTotal*100),100):0):(p.taux||100);
+    const tauxC=taux>=80?'#2a7a5a':taux>=50?'#c8935a':'#c03020';
+    const vhLabel=isReal?vhReel+'h/'+vhTotal+'h':vhTotal+'h';
 
     let cells='';
     for(let i=0;i<NCOLS;i++){
-      const inRange=debIdx>=0&&finIdx>=0&&i>=debIdx&&i<=finIdx;
-      let content='';
+      const inBase=debIdx>=0&&finIdx>=0&&i>=debIdx&&i<=finIdx;
+      let markers='';
       if(p.dates_cc&&Array.isArray(p.dates_cc)){
         p.dates_cc.forEach((d,ci)=>{
-          if(dateToMoisIdx(d)===i) content+=`<span class="gm" style="background:${col.cc};color:#fff" title="CC${ci+1}">★</span>`;
+          if(moisIdxP(d)===i) markers+=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col.cc};color:${col.dark};font-size:5px;line-height:8px;text-align:center;font-weight:900;vertical-align:middle">★</span>`;
         });
       }
-      if(p.dth&&dateToMoisIdx(p.dth)===i) content+=`<span class="gs" style="background:${col.th};border:1.5px solid #5a8ac8" title="Th."></span>`;
-      if(p.dpr&&dateToMoisIdx(p.dpr)===i) content+=`<span class="gs" style="background:${col.pr};border:1.5px solid #2a7a5a" title="Pr."></span>`;
+      if(p.dth&&moisIdxP(p.dth)===i) markers+=`<span style="display:inline-block;width:8px;height:8px;background:${col.th};border:1px solid #5a8ac8;vertical-align:middle"></span>`;
+      if(p.dpr&&moisIdxP(p.dpr)===i) markers+=`<span style="display:inline-block;width:8px;height:8px;background:${col.pr};border:1px solid #2a7a5a;vertical-align:middle"></span>`;
 
-      if(inRange){
-        const r=debIdx===finIdx?'4px':i===debIdx?'4px 0 0 4px':i===finIdx?'0 4px 4px 0':'0';
-        cells+=`<td style="padding:3px 1px;text-align:center"><div class="gb" style="background:${col.bg};border-radius:${r};display:flex;align-items:center;justify-content:center">${content}</div></td>`;
+      if(isReal){
+        // Progression proportionnelle à l'intérieur de la cellule
+        let fillW=0;
+        if(debIdx>=0&&finIdx>=0&&i>=debIdx&&i<=finIdx){
+          const totalRange=finIdx-debIdx+1;
+          const ratio=vhTotal>0?Math.min(vhReel/vhTotal,1):0;
+          const totalFill=ratio*totalRange;
+          const colFill=i-debIdx;
+          if(colFill<Math.floor(totalFill)) fillW=100;
+          else if(colFill===Math.floor(totalFill)) fillW=Math.round((totalFill-Math.floor(totalFill))*100);
+        }
+        const baseBg=inBase?'rgba(0,0,0,.07)':'transparent';
+        cells+=`<td style="padding:2px 1px;text-align:center;border:1px solid #ccc">
+          <div style="position:relative;height:12px;background:${baseBg};border-radius:2px;overflow:hidden">
+            ${fillW>0?`<div style="position:absolute;inset:0;width:${fillW}%;background:${col.bg};opacity:.9"></div>`:''}
+            <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:center;height:100%">${markers}</div>
+          </div></td>`;
       } else {
-        cells+=`<td style="padding:3px 1px;text-align:center">${content}</td>`;
+        const r=debIdx===finIdx?'2px':i===debIdx?'2px 0 0 2px':i===finIdx?'0 2px 2px 0':'0';
+        cells+=`<td style="padding:2px 1px;text-align:center;border:1px solid #ccc">
+          ${inBase?`<div style="background:${col.bg};border-radius:${r};height:12px;display:flex;align-items:center;justify-content:center">${markers}</div>`
+          :`<div style="height:12px;display:flex;align-items:center;justify-content:center">${markers}</div>`}
+        </td>`;
       }
     }
 
-    html+=`<tr style="background:${idx%2===0?'#fff':'#f5f5f5'}">
-      <td style="border-left:3px solid ${col.bg};padding:4px 6px"><b style="color:${col.bg}">${mod?mod.code:'?'}</b><br><span style="font-size:7px;color:#555">${mod?mod.nom:''}</span></td>
-      <td style="text-align:center;font-weight:700">${p.vh||'—'}h</td>
-      <td style="font-size:7px">${frm?frm.prenom[0]+'. '+frm.nom:'—'}</td>
-      <td style="text-align:center"><span style="background:${col.cc};color:#fff;border-radius:8px;padding:1px 5px;font-size:8px">${p.ncc||2}</span></td>
+    html+=`<tr style="background:${idx%2===0?'#fff':'#f7f7f7'}">
+      <td style="padding:3px 5px;border-left:3px solid ${col.bg};border:1px solid #ccc">
+        <span style="font-weight:700;font-size:7.5px;color:${col.bg}">${mod?mod.nom:'?'}</span>
+      </td>
+      <td style="text-align:center;font-weight:700;font-size:7px;border:1px solid #ccc">${vhLabel}</td>
+      <td style="font-size:7px;text-align:center;border:1px solid #ccc">${frm?frm.prenom[0]+'.'+frm.nom:'—'}</td>
+      <td style="text-align:center;border:1px solid #ccc">
+        <span style="background:${col.dark};color:#fff;border-radius:6px;padding:1px 4px;font-size:6.5px;font-weight:700">${p.ncc||0}</span>
+      </td>
       ${cells}
-      <td style="text-align:center;font-weight:700;color:${(p.taux||100)>=80?'#2a7a5a':'#c03020'}">${p.taux||100}%</td>
+      <td style="text-align:center;font-weight:700;font-size:7px;color:${tauxC};border:1px solid #ccc">${taux}%</td>
     </tr>`;
   });
 
   html+=`</tbody></table>
-  <div style="margin-top:6px;font-size:7px;display:flex;gap:10px;flex-wrap:wrap">
-    <b>Légende :</b>
-    <span><span style="display:inline-block;width:16px;height:8px;background:#3B82F6;border-radius:2px;vertical-align:middle"></span> Période</span>
-    <span>★ Date CC &nbsp; ▪ Examen Th. &nbsp; ▪ Examen Pr.</span>
+  <div style="margin-top:3px;font-size:6.5px;display:flex;gap:8px;flex-wrap:wrap;color:#555">
+    <b>Legende :</b>
+    <span><span style="display:inline-block;width:14px;height:7px;background:#3B82F6;border-radius:1px;vertical-align:middle"></span> Periode</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#FEF08A;border:1px solid #1D4ED8;vertical-align:middle;font-size:5px;line-height:8px;text-align:center;color:#1D4ED8;font-weight:900">★</span> CC</span>
+    <span><span style="display:inline-block;width:8px;height:8px;background:#BBF7D0;border:1px solid #5a8ac8;vertical-align:middle"></span> Th.</span>
+    <span><span style="display:inline-block;width:8px;height:8px;background:#FED7AA;border:1px solid #2a7a5a;vertical-align:middle"></span> Pr.</span>
+    ${isReal?'<span>Grise=planifie | Couleur=realise</span>':''}
   </div>`;
   return html;
 }
 
-
-
-// ============================================================
-// PLANNING GANTT PRÉVISIONNEL & RÉALISATION
-// ============================================================
-let PL_TAB = 'prev'; // 'prev' ou 'real'
-
-function switchPlanTab(tab){
-  PL_TAB=tab;
-  const bPrev=g('pl-tab-prev'), bReal=g('pl-tab-real');
-  if(bPrev){bPrev.style.background=tab==='prev'?'var(--ac)':'var(--sf2)';bPrev.style.color=tab==='prev'?'#fff':'var(--tx2)';}
-  if(bReal){bReal.style.background=tab==='real'?'var(--ac)':'var(--sf2)';bReal.style.color=tab==='real'?'#fff':'var(--tx2)';}
-  renderPlanning();
-}
-
-function rPlanning(){
-  const fiSel=g('pl-fi');
-  if(fiSel){
-    const cur=fiSel.value;
-    fiSel.innerHTML='<option value="">-- Filière --</option>'+DB.filieres.map(fi=>`<option value="${fi.id}">${fi.nom}</option>`).join('');
-    if(cur)fiSel.value=cur;
-    // Auto-sélectionner si une seule filière
-    if(!cur&&DB.filieres.length===1)fiSel.value=DB.filieres[0].id;
-  }
-  // Peupler aussi prog-fi en parallèle
-  const progFi=g('prog-fi');
-  if(progFi){
-    const cv=progFi.value;
-    progFi.innerHTML='<option value="">-- Filière --</option>'+DB.filieres.map(fi=>`<option value="${fi.id}">${fi.nom}</option>`).join('');
-    if(cv)progFi.value=cv;
-  }
-  renderPlanning();
-}
-
-function renderPlanning(){
-  const fiid=parseInt(g('pl-fi')?.value)||null;
-  const annee=parseInt(g('pl-annee')?.value)||1;
-  const cont=g('pl-gantt');
-  if(!cont)return;
-  if(!fiid){cont.innerHTML='<div class="empty"><div class="empty-ic">📊</div><div class="empty-t">Sélectionnez une filière</div></div>';return;}
-  const fi=DB.filieres.find(x=>x.id==fiid);
-  const progs=DB.programme.filter(p=>p.fiid==fiid&&p.annee==annee);
-  if(!progs.length){cont.innerHTML='<div class="empty"><div class="empty-ic">📋</div><div class="empty-t">Aucun module planifié.<br>Allez dans "Programme" pour ajouter des modules.</div></div>';return;}
-  cont.innerHTML=buildGanttHTML(progs, fiid, annee, PL_TAB==='real');
-}
 
 function buildGanttHTML(progs, fiid, annee, isReal){
   const MOIS_L=['Septembre','Octobre','Novembre','Décembre','Janvier','Février','Mars','Avril','Mai','Juin','Juillet'];
@@ -4355,70 +4340,129 @@ function buildGanttHTML(progs, fiid, annee, isReal){
   return html;
 }
 
-function printGanttNew(){
+function printGanttNew(exportWord){
   const fiid=parseInt(g('pl-fi')?.value)||null;
   const annee=parseInt(g('pl-annee')?.value)||1;
   if(!fiid){alert('Selectionnez une filiere');return;}
   const fi=DB.filieres.find(x=>x.id==fiid);
-  const etab=DB.etab||{};
+  const e=DB.etab||{};
   const progs=DB.programme.filter(p=>p.fiid==fiid&&p.annee==annee);
-  if(!progs.length){alert('Aucun module planifie');return;}
-  const ordinal=annee===1?'1ere':annee+'eme';
-
-  // Ouvrir dans un nouvel onglet pour garantir le paysage
-  const win=window.open('','_blank');
-  if(!win){alert('Autorisez les popups pour imprimer');return;}
+  if(!progs.length){alert('Aucun module planifie pour cette filiere/annee');return;}
+  const ordFr=annee===1?'1ere':annee===2?'2eme':'3eme';
+  const ordAr=annee===1?'السنة الأولى':annee===2?'السنة الثانية':'السنة الثالثة';
+  const nivo=fi?({'Technicien Spécialisé':'Technicien Specialise / تقني متخصص','Technicien':'Technicien / تقني','Qualification':'Qualification / تأهيل'}[fi.niv]||fi.niv||''):'';
+  const isAccred=!!(e.num_accreditation&&e.num_accreditation.trim());
+  const stags=DB.stagiaires.filter(s=>s.fiid==fiid&&parseInt(s.anneeform||1)==annee);
+  const grps=[...new Set(stags.map(s=>s.gid))].map(gid=>DB.groupes.find(x=>x.id==gid)).filter(Boolean);
 
   const prev=buildGanttPrint(fiid,annee,false);
   const real=buildGanttPrint(fiid,annee,true);
 
-  win.document.write(`<!DOCTYPE html><html><head>
-<meta charset="UTF-8">
-<title>Planning ${fi?fi.nom:''} - ${ordinal} Annee</title>
-<style>
-  @page { size: A3 landscape; margin: 8mm 6mm; }
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5px; color: #222; margin: 0; padding: 6mm; width: 100%; }
-  h1 { font-size: 13px; color: #c8935a; margin: 0 0 2px; }
-  .ph { text-align: center; border-bottom: 2px solid #c8935a; padding-bottom: 6px; margin-bottom: 8px; }
-  .ph p { font-size: 8px; color: #666; margin: 0; }
-  .stitle { font-size: 10px; font-weight: 700; color: #1A1A2E; margin: 8px 0 5px; padding: 3px 8px; background: #f0f0f0; border-left: 4px solid #c8935a; }
-  .page-break { page-break-before: always; padding-top: 6mm; }
-  table { border-collapse: collapse; width: 420mm; table-layout: fixed; }
-  th, td { border: 1px solid #bbb; padding: 3px 3px; vertical-align: middle; overflow: hidden; }
-  th { background: #1A1A2E !important; color: #fff !important; text-align: center; font-size: 7.5px; }
-  td { font-size: 7.5px; }
-  .gantt-bar { height: 14px; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
-  .gantt-marker { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; font-size: 7px; line-height: 10px; text-align: center; font-weight: 900; }
-  .gantt-sq { display: inline-block; width: 10px; height: 10px; vertical-align: middle; }
-  .taux-bar { height: 4px; background: #ddd; border-radius: 2px; margin-top: 2px; }
-  .taux-fill { height: 4px; border-radius: 2px; }
-  .leg { margin-top: 5px; font-size: 7px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .leg-item { display: flex; align-items: center; gap: 3px; }
-  .leg-box { width: 14px; height: 8px; border-radius: 2px; display: inline-block; }
-  .leg-circ { width: 10px; height: 10px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 900; }
-  /* Largeurs des colonnes : 420mm / (4 cols fixes + 11 mois + taux) = optimisé */
-  /* Module=55mm, VH=12mm, Form=28mm, CC=10mm, 11×mois×25mm=275mm, Taux=12mm = 392mm */
-  col.c-mod  { width: 55mm; }
-  col.c-vh   { width: 12mm; }
-  col.c-form { width: 28mm; }
-  col.c-cc   { width: 10mm; }
-  col.c-mois { width: 25mm; }
-  col.c-taux { width: 12mm; }
-</style>
-</head><body>
-<div class="ph"><h1>${etab.nom||'Etablissement'}</h1><p>${fi?fi.nom:''} &mdash; ${ordinal} Annee &mdash; Annee scolaire ${DB.anneeCourante||''}</p></div>
-<div class="stitle">Planning Previsionnel</div>
-${prev}
-<div class="page-break">
-<div class="ph"><h1>${etab.nom||'Etablissement'}</h1><p>${fi?fi.nom:''} &mdash; ${ordinal} Annee &mdash; Planning de Realisation</p></div>
-<div class="stitle">Planning de Realisation</div>
-${real}
-</div>
-<script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script>
-</body></html>`);
-  win.document.close();
+  function hdrBlock(titreFr,titreAr){
+    return `<table style="width:281mm;border-collapse:collapse;border:none;margin-bottom:3mm">
+      <tr>
+        <td style="width:50%;border:none;vertical-align:top;padding:2px 0">
+          <div style="font-size:11px;font-weight:700;color:#c8935a">${e.nom||''}</div>
+          <div style="font-size:7.5px;color:#555">${e.soustitre||''}</div>
+          <div style="font-size:7px;color:#555">${e.adresse?e.adresse+' | ':''} ${e.tel||''}</div>
+          ${isAccred?`<div style="font-size:7px;color:#2a7a5a">Accreditation: ${e.num_accreditation}</div>`:''}
+          <div style="font-size:7px;color:#555">Autorisation: ${e.num_autorisation||''}</div>
+        </td>
+        <td style="width:50%;border:none;text-align:right;direction:rtl;padding:2px 0">
+          <div style="font-size:11px;font-weight:700;color:#c8935a">${e.nom_ar||e.nom||''}</div>
+          <div style="font-size:7.5px;color:#555">${e.soustitre_ar||''}</div>
+          ${isAccred?`<div style="font-size:7px;color:#2a7a5a">الاعتماد: ${e.num_accreditation}</div>`:''}
+        </td>
+      </tr>
+    </table>
+    <table style="width:281mm;border-collapse:collapse;border:1px solid #c8935a;margin-bottom:3mm;background:#fff8f0">
+      <tr>
+        <td style="border:none;padding:2px 6px;font-size:7.5px"><b>Filiere :</b> ${fi?fi.nom:''}</td>
+        <td style="border:none;padding:2px 6px;font-size:7.5px"><b>Niveau :</b> ${nivo}</td>
+        <td style="border:none;padding:2px 6px;font-size:7.5px"><b>Annee :</b> ${ordFr}</td>
+        <td style="border:none;padding:2px 6px;font-size:7.5px"><b>Annee scolaire :</b> ${DB.anneeCourante||''}</td>
+        <td style="border:none;padding:2px 6px;font-size:7px;text-align:right;direction:rtl;color:#666">${ordAr}</td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border:none;padding:2px 6px;font-size:7px"><b>Effectif :</b> ${stags.length} stagiaire(s) | <b>Groupes :</b> ${grps.map(gr=>gr.nom).join(', ')||'—'}</td>
+        <td colspan="2" style="border:none;padding:2px 6px;font-size:7px"><b>Modules planifies :</b> ${progs.length}</td>
+      </tr>
+    </table>
+    <div style="background:#1A1A2E;color:#fff;padding:3px 8px;margin-bottom:3mm;font-size:9px;font-weight:700;border-radius:2px">
+      ${titreFr} &nbsp;&nbsp; <span style="opacity:.7;font-size:8px;direction:rtl">${titreAr}</span>
+    </div>`;
+  }
+
+  // CSS commun A4 paysage
+  const css=`
+    @page{size:A4 landscape;margin:8mm 7mm}
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:8px;color:#111;background:#fff}
+    .page{width:281mm;padding:0}
+    .pb{page-break-before:always;padding-top:4mm}
+    table{border-collapse:collapse}
+    th{background:#1A1A2E!important;color:#fff!important}
+  `;
+
+  if(exportWord){
+    // ── Export Word (HTML → .doc)
+    const wordHTML=`<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="UTF-8">
+    <xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom>
+    <w:DoNotOptimizeForBrowser/></w:WordDocument></xml>
+    <style>
+      @page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:1cm}
+      body{font-family:Arial,sans-serif;font-size:8pt}
+      table{border-collapse:collapse;width:100%}
+      th{background:#1A1A2E;color:#fff;font-size:7pt;text-align:center;border:1pt solid #444;padding:3pt}
+      td{font-size:7pt;border:1pt solid #ccc;padding:2pt;vertical-align:middle}
+    </style></head><body>
+    <div class="page">
+      ${hdrBlock('PLANNING PREVISIONNEL','التخطيط التوقعي')}
+      ${prev}
+    </div>
+    <br style="page-break-before:always">
+    <div class="page">
+      ${hdrBlock('PLANNING DE REALISATION','تخطيط الإنجاز')}
+      ${real}
+    </div>
+    </body></html>`;
+    const blob=new Blob([wordHTML],{type:'application/msword;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='Planning_'+( fi?fi.nom.replace(/\s/g,'_'):'')+`_${ordFr}Annee.doc`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    return;
+  }
+
+  // ── Impression PDF A4 paysage (blob HTML)
+  const pageHTML=`<!DOCTYPE html><html lang="fr"><head>
+    <meta charset="UTF-8">
+    <title>Planning ${fi?fi.nom:''} ${ordFr}Annee</title>
+    <style>${css}</style>
+    </head><body>
+    <div class="page">
+      ${hdrBlock('PLANNING PREVISIONNEL','التخطيط التوقعي')}
+      ${prev}
+    </div>
+    <div class="page pb">
+      ${hdrBlock('PLANNING DE REALISATION','تخطيط الإنجاز')}
+      ${real}
+    </div>
+    <script>window.addEventListener('load',function(){setTimeout(function(){window.print();},500);})<\/script>
+    </body></html>`;
+
+  const blob=new Blob([pageHTML],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank');
+  if(!win){const a=document.createElement('a');a.href=url;a.download='planning.html';a.click();}
+  setTimeout(()=>URL.revokeObjectURL(url),6000);
 }
+
 
 function rProgramme() {
   // Populate filiere select
