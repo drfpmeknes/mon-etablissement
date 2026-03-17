@@ -467,6 +467,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                 <button class="btn btn-s btn-sm" id="btn-addstag" onclick="openAddStag()">+ Inscrire</button>
                 <button class="btn btn-s btn-sm" onclick="printTable('stagiaires')">🖨️ Imprimer</button>
                 <button class="btn btn-s btn-sm" onclick="printEtatInscriptions()" title="État des inscriptions officiel (modèle Ministère)">📋 État inscriptions</button>
+                <button class="btn btn-s btn-sm" onclick="printEtatInscriptions(true)" title="Exporter en Word (.doc)">📄 Export Word</button>
                 <button class="btn btn-s btn-sm" onclick="exportExcel('stagiaires')">📊 Excel</button>
                 <button class="btn btn-s btn-sm" onclick="dlTemplate('stagiaires')" title="Télécharger modèle Excel">📥 Modèle</button>
                 <label class="btn btn-s btn-sm" style="cursor:pointer" title="Importer depuis Excel">📤 Importer<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel('stagiaires',this)"></label>
@@ -514,8 +515,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <!-- SALLES -->
         <div class="view" id="vw-salles">
           <div class="tc">
-            <div class="th"><span class="tt">Salles</span><button class="btn btn-s btn-sm" onclick="openAddSalle()">+ Ajouter salle</button></div>
-            <table><thead><tr><th>Salle</th><th>Type</th><th>Capacité</th><th>Équipement</th><th>Actions</th></tr></thead><tbody id="tb-salle"></tbody></table>
+            <div class="th"><span class="tt">Salles</span>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-s btn-sm" onclick="openAddSalle()">+ Ajouter salle</button>
+                <button class="btn btn-s btn-sm" onclick="printEtatSalles()" title="Imprimer l'état des salles">🖨️ Imprimer</button>
+                <button class="btn btn-s btn-sm" onclick="printEtatSalles(true)" title="Exporter en Word">📄 Word</button>
+              </div>
+            </div>
+        <table><thead><tr><th>Salle</th><th>Type</th><th>Capacité</th><th>Superficie</th><th>Équipement</th><th>Actions</th></tr></thead><tbody id="tb-salle"></tbody></table>
           </div>
         </div>
 
@@ -673,6 +680,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <div class="th"><span class="tt">🏫 Identité de l'établissement</span></div>
               <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
                 <div class="fr">
+                  <div class="fg" style="flex:2"><label>Intitulé du Ministère <span style="font-size:10px;color:var(--tx2)">(apparaît sur les documents officiels)</span></label><input id="p-ministere" placeholder="Ex: Ministère de l'Education Nationale et de la formation Professionnelle"></div>
+                </div>
+                <div class="fr">
                   <div class="fg"><label>Nom de l'établissement (Français)</label><input id="p-nom" placeholder="Ex: Institut Technique Privé Al Amal"></div>
                   <div class="fg"><label>Nom en Arabe <span style="font-size:10px;color:var(--tx2)">(يظهر في الوثائق)</span></label><input id="p-nom-ar" dir="rtl" placeholder="مثال: المعهد التقني الخاص" style="text-align:right;font-size:13px"></div>
                 </div>
@@ -705,6 +715,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
                 <div style="padding-top:6px">
                   <button class="btn btn-p btn-sm" onclick="saveParametres()">💾 Sauvegarder</button>
                 </div>
+              </div>
+            </div>
+            <!-- RÉFÉRENTIEL SECTEURS DE FORMATION -->
+            <div class="tc" style="margin-bottom:18px">
+              <div class="th"><span class="tt">🏗️ Secteurs de formation</span></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="font-size:11px;color:var(--tx2)">Ces secteurs apparaissent dans le formulaire filière et sur l'État des inscriptions officiel.</div>
+                <div style="display:flex;gap:8px">
+                  <input id="new-secteur-input" placeholder="Ex: Bâtiment et Travaux Publics" onkeydown="if(event.key==='Enter'){addSecteur();}" style="flex:1;padding:7px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--sf);color:var(--tx);font-size:12px">
+                  <button class="btn btn-p btn-sm" onclick="addSecteur()">+ Ajouter</button>
+                </div>
+                <div id="secteurs-list" style="display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto"></div>
               </div>
             </div>
             <!-- SAUVEGARDE & SYNCHRONISATION -->
@@ -1083,7 +1105,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="fg"><label>Durée (années)</label><input type="number" id="fi-dur" min="1" max="5" value="2"></div>
       <div class="fg"><label>Statut</label><select id="fi-statut"><option value="active">✅ Active</option><option value="suspendue">⏸️ Suspendue</option><option value="supprimee">❌ Supprimée</option></select></div>
     <div class="fr">
-      <div class="fg"><label>Secteur</label><input id="fi-secteur" placeholder="Ex: Bâtiment et Travaux Publics"></div>
+      <div class="fg"><label>Secteur</label>
+        <select id="fi-secteur" style="width:100%">
+          <option value="">-- Sélectionner un secteur --</option>
+        </select>
+      </div>
       <div class="fg"><label>Type de formation</label><select id="fi-typeform"><option value="Cours du Jour">Cours du Jour</option><option value="Cours du Soir">Cours du Soir</option><option value="Alternance">Alternance</option><option value="À distance">À distance</option></select></div>
     </div>
     </div>
@@ -1171,13 +1197,31 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- SALLE -->
 <div class="mo" id="mod-salle">
-  <div class="md" style="width:420px">
+  <div class="md" style="width:460px">
     <div class="md-title" id="msalle-title">Salle</div><div class="md-sub"></div>
     <input type="hidden" id="sa-id">
-    <div class="fr"><div class="fg"><label>Numéro / Nom</label><input id="sa-num" placeholder="Salle 101"></div><div class="fg"><label>Capacité</label><input type="number" id="sa-cap" value="30"></div></div>
     <div class="fr">
-      <div class="fg"><label>Type</label><select id="sa-type"><option>Salle de cours</option><option>Salle informatique</option><option>Laboratoire</option><option>Amphi</option></select></div>
-      <div class="fg"><label>Équipement</label><input id="sa-eq" placeholder="Projecteur..."></div>
+      <div class="fg"><label>Numéro / Nom</label><input id="sa-num" placeholder="Salle 101"></div>
+      <div class="fg"><label>Type</label>
+        <select id="sa-type">
+          <option value="Salle de cours">🏫 Salle de cours</option>
+          <option value="Salle de TP">🔬 Salle de TP</option>
+          <option value="Salle informatique">💻 Salle informatique</option>
+          <option value="Laboratoire">⚗️ Laboratoire</option>
+          <option value="Amphi">🎭 Amphi</option>
+          <option value="Bureau">🗂️ Bureau</option>
+          <option value="WC">🚻 WC</option>
+          <option value="Bibliothèque">📚 Bibliothèque</option>
+          <option value="Autre">📦 Autre</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Capacité (places)</label><input type="number" id="sa-cap" value="30" min="0"></div>
+      <div class="fg"><label>Superficie (m²)</label><input type="number" id="sa-superficie" placeholder="Ex: 45" min="0" step="0.5"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Équipement / Remarques</label><input id="sa-eq" placeholder="Projecteur, tableau blanc..."></div>
     </div>
     <div class="md-foot"><button class="btn btn-s btn-sm" onclick="closeMod('mod-salle')">Annuler</button><button class="btn btn-p btn-sm" onclick="saveSalle()">Sauvegarder</button></div>
   </div>
@@ -1369,10 +1413,12 @@ async function loadDB(tenantId) {
     const tenantArr = await safeGet('tenants', true);
     const rows = await Promise.all(TABLES.map(t => safeGet(t, false)));
     const T = tenantArr[0]||{};
-    DB.etab = {nom:T.nom||'',soustitre:T.soustitre||'',nom_ar:T.nom_ar||'',soustitre_ar:T.soustitre_ar||'',adresse:T.adresse||'',tel:T.tel||'',email:T.email||'',ice:T.ice||'',logo_emoji:T.logo_emoji||'🎓',num_autorisation:T.num_autorisation||'',date_autorisation:T.date_autorisation||'',num_accreditation:T.num_accreditation||'',date_accreditation:T.date_accreditation||'',directeur:T.directeur||'',president_jury:T.president_jury||''};
+    DB.etab = {nom:T.nom||'',soustitre:T.soustitre||'',nom_ar:T.nom_ar||'',soustitre_ar:T.soustitre_ar||'',adresse:T.adresse||'',tel:T.tel||'',email:T.email||'',ice:T.ice||'',logo_emoji:T.logo_emoji||'🎓',num_autorisation:T.num_autorisation||'',date_autorisation:T.date_autorisation||'',num_accreditation:T.num_accreditation||'',date_accreditation:T.date_accreditation||'',directeur:T.directeur||'',president_jury:T.president_jury||'',ministere:T.ministere||"Ministère de l'Education Nationale et de la formation Professionnelle"};
     const _as = T.annees_scolaires;
     DB.anneesScolaires = Array.isArray(_as)?_as:(typeof _as==='string'?(()=>{try{return JSON.parse(_as);}catch(e){return ['2024-2025','2025-2026'];}})():['2024-2025','2025-2026']);
     DB.anneeCourante   = T.annee_courante||'2025-2026';
+    const _sects=T.secteurs_formation;
+    DB.secteurs = _sects?(typeof _sects==='string'?(()=>{try{return JSON.parse(_sects);}catch(e){return [];}})():_sects):[];
     DB.users        = rows[0];
     DB.admin_staff  = rows[1];
     DB.formateurs   = rows[2];
@@ -1465,6 +1511,10 @@ async function saveEtab() {
     await sbReq('tenants?id=eq.'+TENANT_ID,{method:'PATCH',body:JSON.stringify({
       nom:DB.etab.nom,soustitre:DB.etab.soustitre,adresse:DB.etab.adresse,
       tel:DB.etab.tel,email:DB.etab.email,ice:DB.etab.ice,
+      ministere:DB.etab.ministere||null,
+      directeur:DB.etab.directeur||null,
+      president_jury:DB.etab.president_jury||null,
+      secteurs_formation:JSON.stringify(getSecteurs()),
       num_autorisation:DB.etab.num_autorisation||null,
       date_autorisation:DB.etab.date_autorisation||null,
       num_accreditation:DB.etab.num_accreditation||null,
@@ -2908,8 +2958,8 @@ function rGroupes(){
     <td class="tda"><button class="btn btn-s btn-sm" onclick="openEditGrp(${gr.id})">Modifier</button><button class="btn btn-d btn-sm" onclick="delGrp(${gr.id})">Suppr.</button></td></tr>`;
   }).join('')||er(4);
 }
-function openAddFi(){g('mfi-title').textContent='Ajouter une filière';sv('fi-id','');sv('fi-nom','');sv('fi-nom-ar','');sv('fi-dur',2);sv('fi-dcreation',new Date().toISOString().split('T')[0]);sv('fi-dsuppression','');setSel('fi-statut','active');sv('fi-secteur','');setSel('fi-typeform','Cours du Jour');updateNivoAr();openMod('mod-fi');}
-function openEditFi(id){const fi=DB.filieres.find(x=>x.id==id);if(!fi)return;g('mfi-title').textContent="Modifier la filière";sv('fi-id',fi.id);sv('fi-nom',fi.nom);sv('fi-nom-ar',fi.nom_ar||'');setSel('fi-niv',fi.niv);sv('fi-dur',fi.dur||2);sv('fi-dcreation',fi.date_creation||'');sv('fi-dsuppression',fi.date_suppression||'');setSel('fi-statut',fi.statut_fi||'active');sv('fi-secteur',fi.secteur||'');setSel('fi-typeform',fi.type_formation||'Cours du Jour');updateNivoAr();openMod('mod-fi');}
+function openAddFi(){g('mfi-title').textContent='Ajouter une filière';sv('fi-id','');sv('fi-nom','');sv('fi-nom-ar','');sv('fi-dur',2);sv('fi-dcreation',new Date().toISOString().split('T')[0]);sv('fi-dsuppression','');setSel('fi-statut','active');populateFiSecteurSel('');setSel('fi-typeform','Cours du Jour');updateNivoAr();openMod('mod-fi');}
+function openEditFi(id){const fi=DB.filieres.find(x=>x.id==id);if(!fi)return;g('mfi-title').textContent="Modifier la filière";sv('fi-id',fi.id);sv('fi-nom',fi.nom);sv('fi-nom-ar',fi.nom_ar||'');setSel('fi-niv',fi.niv);sv('fi-dur',fi.dur||2);sv('fi-dcreation',fi.date_creation||'');sv('fi-dsuppression',fi.date_suppression||'');setSel('fi-statut',fi.statut_fi||'active');populateFiSecteurSel(fi.secteur||'');setSel('fi-typeform',fi.type_formation||'Cours du Jour');updateNivoAr();openMod('mod-fi');}
 async function saveFi(){
   const id=gv('fi-id'),niv=gv('fi-niv'),d={nom:gv('fi-nom'),nom_ar:gv('fi-nom-ar')||'',niv,niv_ar:NIVO_AR[niv]||niv,dur:parseInt(gv('fi-dur'))||2,duree:parseInt(gv('fi-dur'))||2,date_creation:gv('fi-dcreation')||null,date_suppression:gv('fi-dsuppression')||null,statut_fi:gv('fi-statut')||'active',secteur:gv('fi-secteur')||null,type_formation:gv('fi-typeform')||'Cours du Jour'};
   if(!d.nom)return;
@@ -3018,14 +3068,28 @@ function updatePctBar(){
 // SALLES
 // ============================================================
 function rSalles(){
-  g('tb-salle').innerHTML=DB.salles.map(sa=>`<tr><td>${sa.num}</td><td><span class="badge bf">${sa.type}</span></td>
-    <td style="font-family:'JetBrains Mono',monospace">${sa.cap}</td><td style="color:var(--tx2);font-size:12px">${sa.eq}</td>
-    <td class="tda"><button class="btn btn-s btn-sm" onclick="openEditSalle(${sa.id})">Modifier</button><button class="btn btn-d btn-sm" onclick="delSalle(${sa.id})">Suppr.</button></td></tr>`).join('')||er(5);
+  const ICONES_TYPE={'Salle de cours':'🏫','Salle de TP':'🔬','Salle informatique':'💻','Laboratoire':'⚗️','Amphi':'🎭','Bureau':'🗂️','WC':'🚻','Bibliothèque':'📚','Autre':'📦'};
+  g('tb-salle').innerHTML=DB.salles.map(sa=>{
+    const ic=ICONES_TYPE[sa.type]||'🏫';
+    const sup=sa.superficie?`<span style="font-family:'JetBrains Mono',monospace">${sa.superficie} m²</span>`:'—';
+    const cap=sa.type==='WC'?'—':`<span style="font-family:'JetBrains Mono',monospace">${sa.cap||'—'}</span>`;
+    return `<tr>
+      <td><b>${sa.num}</b></td>
+      <td><span class="badge bf">${ic} ${sa.type||'—'}</span></td>
+      <td style="text-align:center">${cap}</td>
+      <td style="text-align:center">${sup}</td>
+      <td style="color:var(--tx2);font-size:12px">${sa.eq||'—'}</td>
+      <td class="tda"><button class="btn btn-s btn-sm" onclick="openEditSalle(${sa.id})">Modifier</button><button class="btn btn-d btn-sm" onclick="delSalle(${sa.id})">Suppr.</button></td>
+    </tr>`;
+  }).join('')||er(5);
 }
-function openAddSalle(){g('msalle-title').textContent='Ajouter une salle';sv('sa-id','');sv('sa-num','');sv('sa-cap',30);sv('sa-eq','');openMod('mod-salle');}
-function openEditSalle(id){const sa=DB.salles.find(x=>x.id==id);if(!sa)return;g('msalle-title').textContent="Modifier la salle";sv('sa-id',sa.id);sv('sa-num',sa.num);sv('sa-cap',sa.cap);setSel('sa-type',sa.type);sv('sa-eq',sa.eq);openMod('mod-salle');}
+function openAddSalle(){g('msalle-title').textContent='Ajouter une salle';sv('sa-id','');sv('sa-num','');sv('sa-cap',30);sv('sa-superficie','');sv('sa-eq','');setSel('sa-type','Salle de cours');openMod('mod-salle');}
+function openEditSalle(id){const sa=DB.salles.find(x=>x.id==id);if(!sa)return;g('msalle-title').textContent="Modifier la salle";sv('sa-id',sa.id);sv('sa-num',sa.num);sv('sa-cap',sa.cap||'');sv('sa-superficie',sa.superficie||'');setSel('sa-type',sa.type||'Salle de cours');sv('sa-eq',sa.eq||'');openMod('mod-salle');}
 async function saveSalle(){
-  const id=gv('sa-id'),d={num:gv('sa-num'),cap:parseInt(gv('sa-cap'))||30,type:gv('sa-type'),eq:gv('sa-eq')};
+  const id=gv('sa-id');
+  const supVal=parseFloat(gv('sa-superficie'))||null;
+  const capVal=parseInt(gv('sa-cap'))||null;
+  const d={num:gv('sa-num'),cap:capVal,superficie:supVal,type:gv('sa-type')||'Salle de cours',eq:gv('sa-eq')||''};
   if(!d.num)return;
   try {
     if(SUPA_KEY&&SUPA_KEY.length>=20){
@@ -4022,6 +4086,73 @@ const NIVO_AR={
   'Spécialisation':'تخصص'
 };
 function nivoAr(n){return NIVO_AR[n]||n||'';}
+
+// ============================================================
+// RÉFÉRENTIEL SECTEURS DE FORMATION
+// ============================================================
+const SECTEURS_DEFAUT = [
+  'Agriculture, Pêche Maritime, Forêts et Développement Rural',
+  'Artisanat et Économie Sociale',
+  'Bâtiment et Travaux Publics',
+  'Commerce et Gestion',
+  'Électricité et Électronique',
+  'Hôtellerie et Tourisme',
+  'Industries Mécaniques, Métallurgiques et Électriques',
+  'Industries Textiles et Cuir',
+  'Mines, Pétrole et Géologie',
+  'Pêche Maritime',
+  'Santé',
+  'Technologies de l\'Information et de la Communication',
+  'Textile et Habillement',
+  'Transport et Logistique'
+];
+
+function getSecteurs(){
+  if(!DB.secteurs||!DB.secteurs.length) DB.secteurs=[...SECTEURS_DEFAUT];
+  return DB.secteurs;
+}
+
+function rSecteursParam(){
+  const list=g('secteurs-list');if(!list)return;
+  const sects=getSecteurs();
+  list.innerHTML=sects.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--sf2);border-radius:5px;border:1px solid var(--bd)">
+      <span style="flex:1;font-size:12px">${s}</span>
+      <button onclick="delSecteur(${i})" style="background:none;border:none;cursor:pointer;color:var(--rd);font-size:14px;padding:0 4px;line-height:1" title="Supprimer">✕</button>
+    </div>`).join('')||'<div style="color:var(--tx3);font-size:12px;text-align:center;padding:8px">Aucun secteur — ajoutez-en ci-dessus</div>';
+}
+
+function addSecteur(){
+  const inp=g('new-secteur-input');if(!inp)return;
+  const val=(inp.value||'').trim();
+  if(!val)return;
+  getSecteurs();
+  if(DB.secteurs.includes(val)){inp.value='';return;}
+  DB.secteurs.push(val);
+  inp.value='';
+  save();
+  rSecteursParam();
+  populateFiSecteurSel();
+}
+
+function delSecteur(i){
+  getSecteurs();
+  DB.secteurs.splice(i,1);
+  save();
+  rSecteursParam();
+  populateFiSecteurSel();
+}
+
+function populateFiSecteurSel(valCourante){
+  const sel=g('fi-secteur');if(!sel)return;
+  const sects=getSecteurs();
+  const cur=valCourante!==undefined?valCourante:(sel.value||'');
+  sel.innerHTML='<option value="">-- Sélectionner un secteur --</option>'+
+    sects.map(s=>`<option value="${s}"${s===cur?' selected':''}>${s}</option>`).join('');
+  if(cur&&!sects.includes(cur)){
+    sel.innerHTML+=`<option value="${cur}" selected>${cur}</option>`;
+  }
+}
 const GANTT_MOIS = ['Sep','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai','Jun','Jul'];
 const GANTT_MOIS_NUM = [9,10,11,12,1,2,3,4,5,6,7]; // numéros de mois
 
@@ -5167,6 +5298,7 @@ function rParametres(){updateBackupInfo();
   backupLocal();
   const e=DB.etab||{};
   const set=(id,v)=>{const el=g(id);if(el)el.value=v||'';}
+  set('p-ministere', e.ministere||"Ministère de l'Education Nationale et de la formation Professionnelle");
   set('p-nom',    e.nom);
   set('p-nom-ar', e.nom_ar||'');
   set('p-sub',    e.soustitre);
@@ -5181,6 +5313,7 @@ function rParametres(){updateBackupInfo();
   set('p-date-autor',  e.date_autorisation);
   set('p-num-accred',  e.num_accreditation);
   set('p-date-accred', e.date_accreditation);
+  rSecteursParam();
   // Supabase config
   const supaUrl = localStorage.getItem('supa_url')||SUPA_URL;
   const supaKey = localStorage.getItem('supa_key')||SUPA_KEY.replace('VOTRE_SUPABASE_ANON_KEY','');
@@ -5242,6 +5375,7 @@ function updateParamPreview(){
 });
 function saveParametres(){
   if(!DB.etab) DB.etab={};
+  DB.etab.ministere       = gv('p-ministere') || "Ministère de l'Education Nationale et de la formation Professionnelle";
   DB.etab.nom         = gv('p-nom')   || 'EduManager Pro';
   DB.etab.nom_ar      = gv('p-nom-ar')||'';
   DB.etab.soustitre   = gv('p-sub')   || 'Établissement de Formation Professionnelle';
@@ -5684,15 +5818,170 @@ function printListeInscrits(){
 }
 
 // ============================================================
+// ÉTAT DES SALLES — Impression + Export Word
+// ============================================================
+function printEtatSalles(exportWord=false){
+  const e = DB.etab||{};
+  const salles = [...DB.salles].sort((a,b)=>(a.type||'').localeCompare(b.type||'')||(a.num||'').localeCompare(b.num||''));
+  if(!salles.length){alert('Aucune salle enregistrée.');return;}
+
+  const nomMinistere = e.ministere||"Ministère de l'Education Nationale et de la formation Professionnelle";
+  const dateImp = new Date().toLocaleDateString('fr-MA');
+  const fmt = v => v!=null&&v!==''?v:'—';
+  const fmtSup = v => v!=null&&v!==''?`${v} m²`:'—';
+  const fmtCap = (v,type) => (type==='WC')?'—':(v!=null&&v!==''?`${v} pl.`:'—');
+
+  // ── ICÔNES PAR TYPE ──
+  const IC = {'Salle de cours':'🏫','Salle de TP':'🔬','Salle informatique':'💻',
+    'Laboratoire':'⚗️','Amphi':'🎭','Bureau':'🗂️','WC':'🚻','Bibliothèque':'📚','Autre':'📦'};
+
+  // ── TABLEAU DÉTAILLÉ ──
+  let rowsDet = '';
+  salles.forEach((sa,i)=>{
+    rowsDet += `<tr>
+      <td style="text-align:center;width:4%">${i+1}</td>
+      <td style="width:22%;font-weight:600">${fmt(sa.num)}</td>
+      <td style="width:18%">${(IC[sa.type]||'')+'  '+fmt(sa.type)}</td>
+      <td style="width:12%;text-align:center">${fmtCap(sa.cap,sa.type)}</td>
+      <td style="width:12%;text-align:center">${fmtSup(sa.superficie)}</td>
+      <td style="width:32%;color:#555">${fmt(sa.eq)}</td>
+    </tr>`;
+  });
+
+  // ── RÉCAPITULATIF PAR TYPE ──
+  const types = [...new Set(salles.map(s=>s.type||'Autre'))];
+  let rowsRecap = '';
+  let totalNb=0, totalSup=0;
+  types.forEach(type=>{
+    const grp = salles.filter(s=>(s.type||'Autre')===type);
+    const nb  = grp.length;
+    const sup = grp.reduce((acc,s)=>acc+(parseFloat(s.superficie)||0),0);
+    const supFmt = sup>0?sup.toFixed(1)+' m²':'—';
+    totalNb  += nb;
+    totalSup += sup;
+    rowsRecap += `<tr>
+      <td>${(IC[type]||'')+'  '+type}</td>
+      <td style="text-align:center;font-weight:600">${nb}</td>
+      <td style="text-align:center">${supFmt}</td>
+    </tr>`;
+  });
+  const totalSupFmt = totalSup>0?totalSup.toFixed(1)+' m²':'—';
+  rowsRecap += `<tr style="background:#e8e8e8;font-weight:700">
+    <td>TOTAL</td>
+    <td style="text-align:center">${totalNb}</td>
+    <td style="text-align:center">${totalSupFmt}</td>
+  </tr>`;
+
+  const body = `
+    <!-- EN-TÊTE -->
+    <div class="entete-min">
+      <div class="min-titre">${nomMinistere}</div>
+      <div class="min-deleg">Délégation ${e.ville||'Meknes'}</div>
+    </div>
+    <h1 class="titre-doc">État des Salles & Espaces</h1>
+    <div class="sous-titre">${e.nom||'Établissement'} &nbsp;|&nbsp; Imprimé le ${dateImp}</div>
+
+    <!-- TABLEAU DÉTAILLÉ -->
+    <h2 class="section-h">📋 Liste détaillée</h2>
+    <table class="tbl-salles">
+      <thead><tr>
+        <th>#</th><th>Désignation</th><th>Type</th><th>Capacité</th><th>Superficie</th><th>Équipement / Remarques</th>
+      </tr></thead>
+      <tbody>${rowsDet}</tbody>
+    </table>
+
+    <!-- RÉCAPITULATIF -->
+    <div class="page-break"></div>
+    <div class="entete-min" style="margin-top:0">
+      <div class="min-titre">${nomMinistere}</div>
+      <div class="min-deleg">Délégation ${e.ville||'Meknes'}</div>
+    </div>
+    <h1 class="titre-doc">Récapitulatif par Type d'Espace</h1>
+    <div class="sous-titre">${e.nom||'Établissement'} &nbsp;|&nbsp; Imprimé le ${dateImp}</div>
+
+    <h2 class="section-h">📊 Synthèse</h2>
+    <table class="tbl-recap">
+      <thead><tr><th>Type d'espace</th><th>Nombre</th><th>Superficie totale</th></tr></thead>
+      <tbody>${rowsRecap}</tbody>
+    </table>
+
+    <!-- SIGNATURES -->
+    <div class="sig-row">
+      <div class="sig-box">
+        <div class="sig-lbl">Le Directeur</div>
+        <div class="sig-name">${e.directeur||''}</div>
+        <div class="sig-line">Signature &amp; Cachet</div>
+      </div>
+    </div>`;
+
+  const css = `
+    @page{size:A4;margin:12mm 10mm}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+    body{font-family:"Times New Roman",Arial,serif;font-size:9.5px;color:#000;background:#fff;padding:5mm}
+    .entete-min{border:1px solid #000;padding:5px 10px;margin-bottom:5px;text-align:center}
+    .min-titre{font-size:10px;font-weight:700}
+    .min-deleg{border:1px solid #666;display:inline-block;padding:2px 18px;margin-top:4px;font-size:9px}
+    h1.titre-doc{text-align:center;font-size:14px;font-weight:900;text-decoration:underline;margin:6px 0 3px;letter-spacing:.5px}
+    .sous-titre{text-align:center;font-size:9px;color:#444;margin-bottom:10px}
+    .section-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #000;padding-bottom:3px;margin:10px 0 6px}
+    .tbl-salles{width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:12px;table-layout:fixed}
+    .tbl-salles th{border:1px solid #000;padding:5px 6px;background:#1a1a2e;color:#fff;font-weight:700;text-align:center;font-size:8px}
+    .tbl-salles td{border:1px solid #aaa;padding:4px 6px;vertical-align:middle;word-wrap:break-word}
+    .tbl-salles tr:nth-child(even){background:#f5f5f5}
+    .tbl-recap{width:60%;border-collapse:collapse;font-size:9.5px;margin:0 auto 18px}
+    .tbl-recap th{border:1px solid #000;padding:6px 10px;background:#1a1a2e;color:#fff;font-weight:700;text-align:center}
+    .tbl-recap td{border:1px solid #aaa;padding:5px 10px;vertical-align:middle}
+    .tbl-recap tr:nth-child(even){background:#f5f5f5}
+    .page-break{page-break-before:always;margin-top:0}
+    .sig-row{display:flex;justify-content:flex-end;margin-top:30px;font-size:9px}
+    .sig-box{text-align:center;width:180px}
+    .sig-lbl{font-weight:700;margin-bottom:2px}
+    .sig-name{font-size:9px;color:#333;margin-bottom:28px}
+    .sig-line{border-top:1px solid #333;padding-top:4px;font-size:8px;color:#555}
+    @media print{button{display:none!important}.page-break{page-break-before:always}}`;
+
+  if(exportWord){
+    const htmlWord = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><meta charset='UTF-8'>
+      <style>${css}
+        @page Section1{size:595.35pt 841.95pt;margin:72pt 57pt;}
+        div.Section1{page:Section1;}
+      </style>
+      <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>
+      <w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+      </head><body><div class="Section1">${body}</div></body></html>`;
+    const blob = new Blob(['\ufeff'+htmlWord],{type:'application/msword'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=`etat_salles_${e.nom||'etablissement'}.doc`.replace(/\s/g,'_');
+    a.click(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+    return;
+  }
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>État des Salles</title>
+  <style>${css}</style></head><body>
+  <div style="margin-bottom:10px;display:flex;gap:8px">
+    <button onclick="window.print()" style="padding:7px 20px;background:#1a1a2e;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer">🖨️ Imprimer / PDF</button>
+    <button onclick="window.opener&&window.opener.printEtatSalles(true)" style="padding:7px 20px;background:#1a6b3c;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer">📄 Exporter Word</button>
+  </div>
+  ${body}
+  <script>window.addEventListener('load',function(){setTimeout(function(){window.print();},500);});<\/script>
+  </body></html>`;
+  _openPrintWin(html);
+}
+
+// ============================================================
 // ÉTAT DES INSCRIPTIONS — Modèle officiel Ministère
 // ============================================================
-function printEtatInscriptions(){
+function printEtatInscriptions(exportWord=false){
   const e = DB.etab||{};
   const asFilter = (g('stag-as-filter')||{}).value || DB.anneeCourante || '';
   const fiFilter = parseInt((g('stag-fi-filter')||{}).value) || null;
   const dateImp = new Date().toLocaleDateString('fr-MA');
+  const nomMinistere = e.ministere || "Ministère de l'Education Nationale et de la formation Professionnelle";
 
-  // Regrouper par filière
   const filieres = fiFilter
     ? DB.filieres.filter(f=>f.id===fiFilter)
     : DB.filieres.filter(f=>DB.stagiaires.some(s=>s.fiid==f.id&&(!asFilter||s.as===asFilter||s.as_annee===asFilter)));
@@ -5713,7 +6002,6 @@ function printEtatInscriptions(){
       .sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
     if(!stags.length) return;
 
-    // Regrouper par anneeform
     const annees = [...new Set(stags.map(s=>s.anneeform||1))].sort();
 
     annees.forEach(annee => {
@@ -5727,25 +6015,22 @@ function printEtatInscriptions(){
         const p = s.passerelle ? 'O' : 'N';
         const r = s.redoublant ? 'O' : 'N';
         rows += `<tr>
-          <td>${s.ninsc||'—'}</td>
-          <td style="font-weight:600">${(s.nom||'').toUpperCase()} ${s.prenom||''}</td>
-          <td style="font-family:monospace">${s.cin||'—'}</td>
-          <td>${fmtDate(s.dinsc)}</td>
-          <td>${s.niveau_scolaire||'—'}</td>
-          <td style="text-align:center;font-weight:700">${p}</td>
-          <td style="text-align:center;font-weight:700">${r}</td>
-          <td>${s.adresse||''}</td>
+          <td style="width:9%">${s.ninsc||'—'}</td>
+          <td style="width:18%;font-weight:600">${(s.nom||'').toUpperCase()} ${s.prenom||''}</td>
+          <td style="width:8%;font-family:monospace">${s.cin||'—'}</td>
+          <td style="width:8%">${fmtDate(s.dinsc)}</td>
+          <td style="width:8%">${s.niveau_scolaire||'—'}</td>
+          <td style="width:3%;text-align:center;font-weight:700">${p}</td>
+          <td style="width:3%;text-align:center;font-weight:700">${r}</td>
+          <td style="width:43%">${s.adresse||''}</td>
         </tr>`;
       });
 
       pages += `
       <div class="page">
-        <!-- EN-TÊTE OFFICIEL -->
         <div class="entete-min">
-          <div class="min-gauche">
-            <div class="min-titre">Ministère de l'Education Nationale et de la formation Professionnelle</div>
-            <div class="min-deleg">Délégation ${e.ville||'Meknes'}</div>
-          </div>
+          <div class="min-titre">${nomMinistere}</div>
+          <div class="min-deleg">Délégation ${e.ville||'Meknes'}</div>
         </div>
 
         <h1 class="titre-doc">Etat des inscriptions</h1>
@@ -5774,14 +6059,14 @@ function printEtatInscriptions(){
         <table class="tbl-inscrits">
           <thead>
             <tr>
-              <th>N°inscription</th>
-              <th>Nom &amp; prénom</th>
-              <th>N°CIN</th>
-              <th>Date Inscrip.</th>
-              <th>Niveau Scolaire</th>
-              <th>P</th>
-              <th>R</th>
-              <th>Adresse</th>
+              <th style="width:9%">N°inscription</th>
+              <th style="width:18%">Nom &amp; prénom</th>
+              <th style="width:8%">N°CIN</th>
+              <th style="width:8%">Date Inscrip.</th>
+              <th style="width:8%">Niveau Scolaire</th>
+              <th style="width:3%">P</th>
+              <th style="width:3%">R</th>
+              <th style="width:43%">Adresse</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -5789,41 +6074,67 @@ function printEtatInscriptions(){
 
         <div class="pied-page">
           <div class="nb-stag">Nombre Stagiaires : <b>${ss.length}</b></div>
-          <div class="date-imp">Le ${dateImp} &nbsp;&nbsp;&nbsp;&nbsp; Pages</div>
+          <div class="date-imp">Le ${dateImp}</div>
         </div>
       </div>
       <div class="page-break"></div>`;
     });
   });
 
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>État des Inscriptions</title>
-  <style>
+  const css = `
     @page{size:A4 landscape;margin:10mm 8mm}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
     body{font-family:"Times New Roman",Arial,serif;font-size:9px;background:#fff;color:#000;padding:6mm}
     .page{width:100%;margin-bottom:8mm}
     .page-break{page-break-after:always}
-    .entete-min{border:1px solid #000;padding:4px 8px;margin-bottom:4px}
-    .min-titre{font-size:10px;font-weight:700;text-align:center}
+    .entete-min{border:1px solid #000;padding:4px 8px;margin-bottom:4px;text-align:center}
+    .min-titre{font-size:10px;font-weight:700}
     .min-deleg{border:1px solid #666;display:inline-block;padding:2px 16px;margin-top:4px;font-size:9px}
     h1.titre-doc{text-align:center;font-size:14px;font-weight:900;text-decoration:underline;margin:6px 0 8px;letter-spacing:.5px}
     .info-etab{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:9px}
     .info-etab td{padding:3px 6px}
-    .ilbl{font-weight:700;white-space:nowrap;width:110px}
-    .ival{border:1px solid #555;padding:2px 8px;min-width:200px}
-    .tbl-inscrits{width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:6px}
-    .tbl-inscrits th{border:1px solid #000;padding:4px 5px;background:#e8e8e8;font-weight:700;text-align:center;font-size:8px}
-    .tbl-inscrits td{border:1px solid #999;padding:3px 5px;vertical-align:middle}
+    .ilbl{font-weight:700;white-space:nowrap;width:90px}
+    .ival{border:1px solid #555;padding:2px 8px;min-width:180px}
+    .tbl-inscrits{width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:6px;table-layout:fixed}
+    .tbl-inscrits th{border:1px solid #000;padding:4px 5px;background:#e8e8e8;font-weight:700;text-align:center;font-size:8px;word-wrap:break-word}
+    .tbl-inscrits td{border:1px solid #999;padding:3px 5px;vertical-align:middle;word-wrap:break-word}
     .tbl-inscrits tr:nth-child(even){background:#f9f9f9}
     .pied-page{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:8.5px;font-weight:700}
     .nb-stag{border:1px solid #333;padding:3px 12px}
     .date-imp{color:#555}
-    @media print{
-      button{display:none!important}
-      .page-break{page-break-after:always}
-    }
-  </style></head><body>
-  <button onclick="window.print()" style="margin-bottom:10px;padding:7px 20px;background:#1a1a2e;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer">🖨️ Imprimer / Enregistrer PDF</button>
+    @media print{button{display:none!important}.page-break{page-break-after:always}}`;
+
+  if(exportWord){
+    // Export Word via Blob HTML avec mhtml
+    const htmlWord = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><meta charset='UTF-8'>
+      <style>${css}
+        @page Section1{size:841.95pt 595.35pt;margin:72pt 57pt;}
+        div.Section1{page:Section1;}
+        .page-break{page-break-after:always;mso-break-type:section-break}
+      </style>
+      <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>
+      <w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+      </head><body><div class="Section1">${pages}</div></body></html>`;
+    const blob = new Blob(['\ufeff'+htmlWord],{type:'application/msword'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url;
+    const fiNom = fiFilter?(DB.filieres.find(f=>f.id===fiFilter)||{}).nom||'filieres':'toutes';
+    a.download=`etat_inscriptions_${(asFilter||'').replace('/','_')}_${fiNom.replace(/\s/g,'_')}.doc`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    return;
+  }
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>État des Inscriptions</title>
+  <style>${css}</style></head><body>
+  <div style="margin-bottom:10px;display:flex;gap:8px">
+    <button onclick="window.print()" style="padding:7px 20px;background:#1a1a2e;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer">🖨️ Imprimer / PDF</button>
+    <button onclick="window.opener&&window.opener.printEtatInscriptions(true)" style="padding:7px 20px;background:#1a6b3c;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer">📄 Exporter Word</button>
+  </div>
   ${pages}
   <script>window.addEventListener('load',function(){setTimeout(function(){window.print();},500);});<\/script>
   </body></html>`;
