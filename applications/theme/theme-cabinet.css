@@ -218,7 +218,6 @@ html.app-cabinet .nmod-card{
   border-radius:var(--r) !important;
   box-shadow:var(--sh2) !important;
 }
-html.app-cabinet .sc:hover{transform:none !important;box-shadow:var(--sh2) !important}
 html.app-cabinet .sc::before{height:4px !important}
 html.app-cabinet .sc.or::before{background:var(--cab-grad) !important}
 html.app-cabinet .th{
@@ -284,36 +283,87 @@ html.app-cabinet .auth-inp:focus{
 }
 html.app-cabinet select option{background:var(--cab-surface) !important;color:var(--tx) !important}
 
-/* ─── Boutons : entièrement plats (aucun relief, aucun soulèvement) ─── */
-html.app-cabinet .btn,
-html.app-cabinet .btn:hover,
-html.app-cabinet .btn:active,
-html.app-cabinet .btn:focus{
-  border-radius:10px !important;
-  text-shadow:none !important;
+/* ─── Boutons 3D modernes : relief, reflet, soulèvement au survol, enfoncement au clic ─── */
+html.app-cabinet .btn{
+  --edge:#0a5654;
+  --glow:rgba(15,124,122,.30);
+  position:relative;
+  border-radius:12px !important;
+  border:none !important;
+  text-shadow:0 1px 1px rgba(0,0,0,.18) !important;
   letter-spacing:.01em !important;
-  box-shadow:none !important;
-  transform:none !important;
-  transition:filter .15s,background-color .15s,border-color .15s !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    inset 0 -2px 0 rgba(0,0,0,.10),
+    0 4px 0 var(--edge),
+    0 8px 18px var(--glow) !important;
+  transform:translateY(0) !important;
+  transition:transform .14s cubic-bezier(.3,.7,.4,1),box-shadow .14s cubic-bezier(.3,.7,.4,1),filter .14s !important;
+  will-change:transform;
 }
-html.app-cabinet .btn::after,
 html.app-cabinet .btn::before{display:none !important}
-html.app-cabinet .btn:hover{filter:brightness(1.06) !important}
-html.app-cabinet .btn:active{filter:brightness(.94) !important}
-html.app-cabinet .btn-save,html.app-cabinet .btn-p{background:var(--cab-grad) !important;color:#fff !important}
-html.app-cabinet .btn-g,html.app-cabinet .btn-excel{background:linear-gradient(135deg,#2b9a6a,#38b07c) !important;color:#fff !important}
-html.app-cabinet .btn-print{background:linear-gradient(135deg,#c98a3a,#ddA552) !important;color:#fff !important}
-html.app-cabinet .btn-word,html.app-cabinet .btn-notes{background:linear-gradient(135deg,#245f93,#2f78b4) !important;color:#fff !important}
-html.app-cabinet .btn-email{background:linear-gradient(135deg,#127a8a,#1b98a8) !important;color:#fff !important}
-html.app-cabinet .btn-view{background:linear-gradient(135deg,#5d4fa3,#7766c2) !important;color:#fff !important}
-html.app-cabinet .btn-edit{background:linear-gradient(135deg,#d0803c,#e09a55) !important;color:#fff !important}
-html.app-cabinet .btn-del,html.app-cabinet .btn-d{background:linear-gradient(135deg,#b8414f,#d05a68) !important;color:#fff !important}
-html.app-cabinet .btn-s{
-  background:var(--cab-surface) !important;color:var(--cab-label) !important;
-  border:1.5px solid var(--cab-input-bd) !important;
+/* reflet vitré en haut du bouton */
+html.app-cabinet .btn::after{
+  content:'' !important;display:block !important;position:absolute;inset:0 0 50% 0;
+  border-radius:12px 12px 40% 40% / 12px 12px 10px 10px;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0)) !important;
+  pointer-events:none;
 }
-html.app-cabinet .btn-s:hover{background:var(--cab-hover) !important;border-color:var(--ac) !important;color:var(--cab-active) !important;filter:none !important}
-html.app-cabinet .btn:focus-visible{outline:3px solid rgba(15,124,122,.35) !important;outline-offset:2px}
+html.app-cabinet .btn:hover{
+  transform:translateY(-2px) !important;
+  filter:brightness(1.05) saturate(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.4),
+    inset 0 -2px 0 rgba(0,0,0,.10),
+    0 6px 0 var(--edge),
+    0 14px 26px var(--glow) !important;
+}
+html.app-cabinet .btn:active{
+  transform:translateY(4px) !important;
+  filter:brightness(.97);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.18),
+    0 0 0 var(--edge),
+    0 3px 8px var(--glow) !important;
+  transition-duration:.06s !important;
+}
+html.app-cabinet .btn-sm{border-radius:10px !important}
+html.app-cabinet .btn-sm::after{border-radius:10px 10px 40% 40% / 10px 10px 8px 8px}
+
+html.app-cabinet .btn-save,html.app-cabinet .btn-p{background:linear-gradient(180deg,#19a6a1,#0f7c7a) !important;color:#fff !important;--edge:#0a5654;--glow:rgba(15,124,122,.32)}
+html.app-cabinet .btn-g,html.app-cabinet .btn-excel{background:linear-gradient(180deg,#43bf87,#2b9a6a) !important;color:#fff !important;--edge:#1d6e4b;--glow:rgba(43,154,106,.30)}
+html.app-cabinet .btn-print{background:linear-gradient(180deg,#e6b062,#c98a3a) !important;color:#fff !important;--edge:#94631f;--glow:rgba(201,138,58,.30)}
+html.app-cabinet .btn-word,html.app-cabinet .btn-notes{background:linear-gradient(180deg,#3a86c6,#245f93) !important;color:#fff !important;--edge:#173f64;--glow:rgba(36,95,147,.30)}
+html.app-cabinet .btn-email{background:linear-gradient(180deg,#22a4b4,#127a8a) !important;color:#fff !important;--edge:#0b5560;--glow:rgba(18,122,138,.30)}
+html.app-cabinet .btn-view{background:linear-gradient(180deg,#8574d0,#5d4fa3) !important;color:#fff !important;--edge:#3e3475;--glow:rgba(93,79,163,.30)}
+html.app-cabinet .btn-edit{background:linear-gradient(180deg,#eaa462,#d0803c) !important;color:#fff !important;--edge:#985623;--glow:rgba(208,128,60,.30)}
+html.app-cabinet .btn-del,html.app-cabinet .btn-d{background:linear-gradient(180deg,#dc6573,#b8414f) !important;color:#fff !important;--edge:#832b36;--glow:rgba(184,65,79,.30)}
+html.app-cabinet .btn-s{
+  background:linear-gradient(180deg,var(--cab-surface),var(--cab-hover)) !important;
+  color:var(--cab-label) !important;
+  --edge:var(--cab-input-bd);--glow:rgba(16,58,64,.10);
+  text-shadow:none !important;
+}
+html.app-cabinet .btn-s:hover{color:var(--cab-active) !important}
+html.app-cabinet.cab-nuit .btn-s{--glow:rgba(0,0,0,.35)}
+html.app-cabinet .btn:focus-visible{outline:3px solid rgba(15,124,122,.45) !important;outline-offset:3px}
+
+/* Bouton Jour / Nuit aussi en relief */
+html.app-cabinet #cab-mode-btn{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 0 var(--bd2),0 6px 14px rgba(16,58,64,.10);
+  transition:transform .14s,box-shadow .14s;
+}
+html.app-cabinet #cab-mode-btn:hover{transform:translateY(-2px)}
+html.app-cabinet #cab-mode-btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--bd2)}
+
+/* ─── Cartes en relief, légère inclinaison 3D au survol ─── */
+html.app-cabinet .sgrid{perspective:1200px}
+html.app-cabinet .sc{transform-style:preserve-3d;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s !important}
+html.app-cabinet .sc:hover{
+  transform:translateY(-4px) rotateX(6deg) rotateY(-4deg) !important;
+  box-shadow:0 18px 40px rgba(16,58,64,.16) !important;
+}
+html.app-cabinet.cab-nuit .sc:hover{box-shadow:0 18px 40px rgba(0,0,0,.45) !important}
 
 /* Badges */
 html.app-cabinet .badge{border-radius:999px !important;font-weight:800 !important}
@@ -438,14 +488,72 @@ html.app-cabinet #supa-loading > span{color:var(--cab-head) !important;font-fami
 html.app-cabinet #orient-btn{display:none !important}
 html.app-cabinet #app{transform:none !important}
 
-/* Indicateurs de chargement sans rotation : pulsation douce */
-@keyframes cabPulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
-html.app-cabinet #supa-loading > div{
-  animation:cabPulse 1.2s ease-in-out infinite !important;
-  border:none !important;background:var(--cab-grad) !important;
-  width:22px !important;height:22px !important;
+/* ─── Feuilles qui tournent : transitions 3D modernes ─── */
+/* Changement de page : la nouvelle page pivote comme une feuille qu'on tourne */
+@keyframes cabFeuille{
+  0%  {opacity:0;transform:perspective(1600px) rotateY(-24deg) translateX(-28px);filter:blur(2px)}
+  60% {opacity:1;filter:blur(0)}
+  100%{opacity:1;transform:none}
 }
-html.app-cabinet [style*="_spin"]{animation:cabPulse 1.2s ease-in-out infinite !important}
+html.app-cabinet .view.active{
+  transform-origin:left center;
+  animation:cabFeuille .6s cubic-bezier(.2,.8,.2,1) both;
+}
+/* Cartes : arrivée en cascade, basculées depuis le bas */
+@keyframes cabCarte{
+  0%  {opacity:0;transform:perspective(1200px) rotateX(-18deg) translateY(18px)}
+  100%{opacity:1;transform:none}
+}
+html.app-cabinet .view.active .sc,
+html.app-cabinet .view.active > .tc,
+html.app-cabinet .view.active .dcard{
+  transform-origin:top center;
+  animation:cabCarte .55s cubic-bezier(.2,.8,.2,1) both;
+}
+html.app-cabinet .view.active .sc:nth-child(2),html.app-cabinet .view.active .dcard:nth-child(2){animation-delay:.05s}
+html.app-cabinet .view.active .sc:nth-child(3),html.app-cabinet .view.active .dcard:nth-child(3){animation-delay:.10s}
+html.app-cabinet .view.active .sc:nth-child(4),html.app-cabinet .view.active .dcard:nth-child(4){animation-delay:.15s}
+html.app-cabinet .view.active .sc:nth-child(5),html.app-cabinet .view.active .dcard:nth-child(5){animation-delay:.20s}
+html.app-cabinet .view.active .sc:nth-child(n+6),html.app-cabinet .view.active .dcard:nth-child(n+6){animation-delay:.25s}
+/* Fenêtres : elles se déplient en pivotant depuis le haut */
+@keyframes cabFenetre{
+  0%  {opacity:0;transform:perspective(1400px) rotateX(-38deg) translateY(-24px) scale(.96)}
+  65% {opacity:1;transform:perspective(1400px) rotateX(6deg) scale(1.005)}
+  100%{opacity:1;transform:none}
+}
+html.app-cabinet .mo.open .md{
+  transform-origin:top center;
+  animation:cabFenetre .55s cubic-bezier(.2,.8,.2,1) both;
+}
+/* Écran de connexion : la carte arrive en pivotant */
+@keyframes cabConnexion{
+  0%  {opacity:0;transform:perspective(1400px) rotateY(18deg) translateY(10px)}
+  100%{opacity:1;transform:none}
+}
+html.app-cabinet #auth .acard{animation:cabConnexion .8s cubic-bezier(.2,.8,.2,1) both}
+
+/* Chargement : une feuille qui tourne sur elle-même */
+@keyframes cabFeuilleTourne{
+  0%  {transform:perspective(300px) rotateY(0) rotateX(0)}
+  50% {transform:perspective(300px) rotateY(180deg) rotateX(0)}
+  100%{transform:perspective(300px) rotateY(180deg) rotateX(180deg)}
+}
+html.app-cabinet #supa-loading > div{
+  width:38px !important;height:46px !important;border:none !important;border-radius:6px !important;
+  background:linear-gradient(135deg,#ffffff 0%,#dff3f1 100%) !important;
+  box-shadow:inset 0 0 0 2px #0f7c7a,0 10px 24px rgba(15,124,122,.35) !important;
+  animation:cabFeuilleTourne 1.2s cubic-bezier(.45,.05,.55,.95) infinite !important;
+}
+
+/* Accessibilité : animations réduites si le système le demande */
+@media (prefers-reduced-motion: reduce){
+  html.app-cabinet .view.active,
+  html.app-cabinet .view.active .sc,
+  html.app-cabinet .view.active > .tc,
+  html.app-cabinet .view.active .dcard,
+  html.app-cabinet .mo.open .md,
+  html.app-cabinet #auth .acard{animation:none !important}
+}
 
 /* Bouton Jour / Nuit / Auto dans la barre du haut */
 #cab-mode-btn{
