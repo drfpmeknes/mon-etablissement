@@ -32371,7 +32371,7 @@ function printEtatInscriptions(exportWord=false){
 
   const filieres = fiFilter
     ? DB.filieres.filter(f=>f.id===fiFilter)
-    : DB.filieres.filter(f=>DB.stagiaires.some(s=>s.fiid==f.id&&(!asFilter||s.as===asFilter||s.as_annee===asFilter)));
+    : DB.filieres.filter(f=>DB.stagiaires.some(s=>s.fiid==f.id&&!_isAbandonne(s)&&(!asFilter||s.as===asFilter||s.as_annee===asFilter)));
 
   if(!filieres.length){toast('Aucun stagiaire à afficher.','warn');return;}
 
@@ -32385,7 +32385,8 @@ function printEtatInscriptions(exportWord=false){
 
   filieres.forEach(fi => {
     const stags = DB.stagiaires
-      .filter(s => s.fiid==fi.id && (!asFilter||s.as===asFilter||s.as_annee===asFilter))
+      // Les stagiaires déclarés en abandon ne figurent pas sur l'État des inscriptions
+      .filter(s => s.fiid==fi.id && !_isAbandonne(s) && (!asFilter||s.as===asFilter||s.as_annee===asFilter))
       .sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
     if(!stags.length) return;
 
@@ -32467,6 +32468,8 @@ function printEtatInscriptions(exportWord=false){
       <div class="page-break"></div>`;
     });
   });
+
+  if(!pages){toast('Aucun stagiaire inscrit à afficher (les abandons sont exclus).','warn');return;}
 
   const css = `
     @page{size:A4 landscape;margin:10mm 8mm}
