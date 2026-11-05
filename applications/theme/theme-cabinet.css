@@ -21,7 +21,7 @@ html.app-cabinet{
   --bd2:#c9dada !important;
   --tx:#163238 !important;
   --tx2:#3e5c63 !important;
-  --tx3:#6c868c !important;
+  --tx3:var(--tx3) !important;
   --ac:#0f7c7a !important;
   --ac2:#17a19d !important;
   --acd:rgba(15,124,122,.09) !important;
@@ -45,8 +45,85 @@ html.app-cabinet{
   --cab-serif:'Cormorant Garamond','Playfair Display',Georgia,serif;
   --cab-sans:'Nunito Sans','DM Sans',system-ui,sans-serif;
   --cab-grad:linear-gradient(135deg,#0f7c7a 0%,#12908c 55%,#1aa7a0 100%);
+  --cab-surface:#ffffff;
+  --cab-head:#0f4f53;
+  --cab-hover:#eef6f6;
+  --cab-row-alt:#fafcfc;
+  --cab-row-line:#edf3f3;
+  --cab-input-bd:#d3e2e2;
+  --cab-label:#2f6066;
+  --cab-th:#0f5457;
+  --cab-muted:#8aa1a6;
+  --cab-active:#0f6d6b;
+  --cab-glass:rgba(255,255,255,.9);
+  --cab-glass-2:rgba(255,255,255,.35);
+  --cab-auth-bg:linear-gradient(180deg,#f6fafa,#eaf3f3);
+  --cab-veil:linear-gradient(135deg,rgba(243,247,247,.92),rgba(255,255,255,.88));
   color-scheme:light;
 }
+
+/* ══ MODE NUIT (activé automatiquement le soir, ou manuellement) ══ */
+html.app-cabinet.cab-nuit{
+  --bg:#0d181a !important;
+  --sf:#132326 !important;
+  --sf2:#172a2d !important;
+  --sf3:#1d3236 !important;
+  --sf-rgb:19,35,38 !important;
+  --bd:#233a3e !important;
+  --bd2:#2d474c !important;
+  --tx:#e3eded !important;
+  --tx2:#a9c1c3 !important;
+  --tx3:#7f9a9d !important;
+  --ac:#2cb3ad !important;
+  --ac2:#52d0c8 !important;
+  --acd:rgba(44,179,173,.15) !important;
+  --gr:#45c48c !important;
+  --grd:rgba(69,196,140,.14) !important;
+  --rd:#e07383 !important;
+  --rdd:rgba(224,115,131,.14) !important;
+  --bl:#5b9bd5 !important;
+  --bld:rgba(91,155,213,.14) !important;
+  --pu:#9b8be0 !important;
+  --pud:rgba(155,139,224,.14) !important;
+  --sh:0 18px 48px rgba(0,0,0,.45) !important;
+  --sh2:0 6px 22px rgba(0,0,0,.28) !important;
+  --th-bg:#0c3a3d !important;
+  --th-border:#0c3a3d30 !important;
+  --ni-color:#a9c1c3 !important;
+  --cab-surface:#132326;
+  --cab-head:#bfe8e3;
+  --cab-hover:#1a3236;
+  --cab-row-alt:#152729;
+  --cab-row-line:#1f3437;
+  --cab-input-bd:#2d474c;
+  --cab-label:#8fd2cb;
+  --cab-th:#0c3a3d;
+  --cab-muted:#6f8b8e;
+  --cab-active:#5fd6ce;
+  --cab-glass:rgba(19,35,38,.92);
+  --cab-glass-2:rgba(13,24,26,.45);
+  --cab-auth-bg:linear-gradient(180deg,#0f1d20,#0a1416);
+  --cab-veil:linear-gradient(135deg,rgba(13,24,26,.90),rgba(10,20,22,.86));
+  color-scheme:dark;
+}
+html.app-cabinet.cab-nuit body{
+  background:
+    radial-gradient(1200px 600px at 100% -10%,rgba(44,179,173,.08),transparent 60%),
+    var(--bg) !important;
+}
+html.app-cabinet.cab-nuit .topbar{background:rgba(19,35,38,.9) !important;box-shadow:none !important}
+html.app-cabinet.cab-nuit .btn-s{color:var(--tx) !important}
+html.app-cabinet.cab-nuit #auth-wallpaper{filter:saturate(.5) brightness(.6)}
+html.app-cabinet.cab-nuit .fg input,
+html.app-cabinet.cab-nuit .fg select,
+html.app-cabinet.cab-nuit .fg textarea{color:var(--tx) !important}
+/* Transition douce entre jour et nuit */
+html.app-cabinet body,
+html.app-cabinet .sidebar,
+html.app-cabinet .topbar,
+html.app-cabinet .tc,
+html.app-cabinet .sc,
+html.app-cabinet .dcard{transition:background-color .4s ease,color .4s ease,border-color .4s ease}
 
 html.app-cabinet body{
   font-family:var(--cab-sans);
@@ -61,13 +138,13 @@ html.app-cabinet ::selection{background:rgba(15,124,122,.18)}
 /* Fond d'écran photo : voile clair */
 html.app-cabinet #app-wallpaper::after,
 html.app-cabinet .dark-theme #app-wallpaper::after{
-  background:linear-gradient(135deg,rgba(243,247,247,.93),rgba(255,255,255,.90)) !important;
+  background:var(--cab-veil) !important;
 }
 
 /* ─── Barres de défilement fines ─── */
-html.app-cabinet *{scrollbar-color:#c9dada transparent}
+html.app-cabinet *{scrollbar-color:var(--bd2) transparent}
 html.app-cabinet ::-webkit-scrollbar{width:9px;height:9px}
-html.app-cabinet ::-webkit-scrollbar-thumb{background:#cfdede;border-radius:9px;border:2px solid transparent;background-clip:padding-box}
+html.app-cabinet ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:9px;border:2px solid transparent;background-clip:padding-box}
 html.app-cabinet ::-webkit-scrollbar-track{background:transparent}
 
 /* ─── Typographie ─── */
@@ -79,9 +156,9 @@ html.app-cabinet .sv{
   font-family:var(--cab-serif) !important;
   letter-spacing:0 !important;
 }
-html.app-cabinet .tbtitle{color:#0f4f53 !important;font-weight:700 !important;font-size:27px !important}
+html.app-cabinet .tbtitle{color:var(--cab-head) !important;font-weight:700 !important;font-size:27px !important}
 html.app-cabinet .tbsub{color:var(--tx3) !important}
-html.app-cabinet .sv{color:#0f4f53;font-weight:700;font-size:36px}
+html.app-cabinet .sv{color:var(--cab-head);font-weight:700;font-size:36px}
 html.app-cabinet .sl{color:var(--tx3);letter-spacing:.09em}
 html.app-cabinet .btn,
 html.app-cabinet input,
@@ -91,7 +168,7 @@ html.app-cabinet textarea{font-family:var(--cab-sans) !important}
 /* ─── Barre latérale ─── */
 html.app-cabinet .sidebar,
 html.app-cabinet .dark-theme .sidebar{
-  background:#ffffff !important;
+  background:var(--cab-surface) !important;
   backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
   border-right:1px solid var(--bd) !important;
   box-shadow:4px 0 28px rgba(16,58,64,.05) !important;
@@ -102,18 +179,18 @@ html.app-cabinet .slogo-ic{
   box-shadow:0 6px 16px rgba(15,124,122,.28) !important;
   border-radius:12px !important;color:#fff;
 }
-html.app-cabinet .slogo-t{color:#0f4f53 !important;font-size:17px !important;font-weight:700}
-html.app-cabinet .nsec-lbl{color:#8aa1a6 !important;letter-spacing:.16em !important}
+html.app-cabinet .slogo-t{color:var(--cab-head) !important;font-size:17px !important;font-weight:700}
+html.app-cabinet .nsec-lbl{color:var(--cab-muted) !important;letter-spacing:.16em !important}
 html.app-cabinet .nsec-toggle{background:var(--acd) !important;color:var(--ac) !important}
 html.app-cabinet .ni{color:var(--ni-color) !important;border-radius:10px !important;font-weight:600}
-html.app-cabinet .ni:hover{background:#eef6f6 !important;color:#0f4f53 !important}
+html.app-cabinet .ni:hover{background:var(--cab-hover) !important;color:var(--cab-head) !important}
 html.app-cabinet .ni.active{
   background:linear-gradient(90deg,rgba(15,124,122,.13),rgba(15,124,122,.03)) !important;
-  color:#0f6d6b !important;border-left:3px solid var(--ac) !important;
+  color:var(--cab-active) !important;border-left:3px solid var(--ac) !important;
 }
 html.app-cabinet .ni .ni-lbl,
 html.app-cabinet .ni span:not(.badge){color:inherit !important}
-html.app-cabinet .sidebar-toggle{background:#eef6f6 !important;border-color:var(--ac) !important;color:var(--ac) !important}
+html.app-cabinet .sidebar-toggle{background:var(--cab-hover) !important;border-color:var(--ac) !important;color:var(--ac) !important}
 html.app-cabinet .sidebar-toggle:hover{background:var(--ac) !important;color:#fff !important}
 html.app-cabinet .susr{border-top:1px solid var(--bd) !important}
 html.app-cabinet .uav{background:var(--cab-grad) !important;color:#fff;box-shadow:0 3px 10px rgba(15,124,122,.25) !important}
@@ -122,7 +199,7 @@ html.app-cabinet #ac-search,html.app-cabinet #ac-search-wrap input{background:va
 /* ─── Barre du haut ─── */
 html.app-cabinet .topbar,
 html.app-cabinet .dark-theme .topbar{
-  background:rgba(255,255,255,.88) !important;
+  background:var(--cab-glass) !important;
   backdrop-filter:blur(14px) saturate(160%) !important;
   -webkit-backdrop-filter:blur(14px) saturate(160%) !important;
   border-bottom:1px solid var(--bd) !important;
@@ -136,20 +213,20 @@ html.app-cabinet .dcard,
 html.app-cabinet .sc,
 html.app-cabinet .ppanel,
 html.app-cabinet .nmod-card{
-  background:#ffffff !important;
+  background:var(--cab-surface) !important;
   border:1px solid var(--bd) !important;
   border-radius:var(--r) !important;
   box-shadow:var(--sh2) !important;
 }
-html.app-cabinet .sc:hover{box-shadow:0 14px 34px rgba(16,58,64,.11) !important}
+html.app-cabinet .sc:hover{transform:none !important;box-shadow:var(--sh2) !important}
 html.app-cabinet .sc::before{height:4px !important}
 html.app-cabinet .sc.or::before{background:var(--cab-grad) !important}
 html.app-cabinet .th{
-  background:linear-gradient(90deg,rgba(15,124,122,.07),#ffffff) !important;
+  background:linear-gradient(90deg,var(--acd),var(--cab-surface)) !important;
   border-bottom:1px solid var(--bd) !important;
 }
 html.app-cabinet .tt,
-html.app-cabinet .dcard-t{color:#0f4f53 !important;font-family:var(--cab-serif) !important;font-size:19px !important;font-weight:700 !important;letter-spacing:0 !important;text-transform:none !important}
+html.app-cabinet .dcard-t{color:var(--cab-head) !important;font-family:var(--cab-serif) !important;font-size:19px !important;font-weight:700 !important;letter-spacing:0 !important;text-transform:none !important}
 
 /* ─── Tableaux ─── */
 html.app-cabinet th,
@@ -159,22 +236,22 @@ html.app-cabinet .tbl-scroll table thead tr th,
 html.app-cabinet table.tbl-main thead th,
 html.app-cabinet .ntable thead th,
 html.app-cabinet .prog-table thead th{
-  background:#0f5457 !important;
+  background:var(--cab-th) !important;
   color:#ffffff !important;
   text-shadow:none !important;
   border-bottom:none !important;
   letter-spacing:.08em !important;
 }
-html.app-cabinet td{background:#ffffff;border-bottom:1px solid #edf3f3 !important;color:var(--tx)}
-html.app-cabinet tbody tr:nth-child(even) td{background:#fafcfc}
-html.app-cabinet tr:hover td{background:#eff7f7 !important}
+html.app-cabinet td{background:var(--cab-surface);border-bottom:1px solid var(--cab-row-line) !important;color:var(--tx)}
+html.app-cabinet tbody tr:nth-child(even) td{background:var(--cab-row-alt)}
+html.app-cabinet tr:hover td{background:var(--cab-hover) !important}
 
 /* ─── Formulaires ─── */
 html.app-cabinet .fg label,
 html.app-cabinet .acf-row label,
 html.app-cabinet .dcal-form-row label{
   font-family:var(--cab-sans) !important;
-  color:#2f6066 !important;
+  color:var(--cab-label) !important;
   font-size:11.5px !important;letter-spacing:.12em !important;font-weight:800 !important;
 }
 html.app-cabinet .fg input,
@@ -190,8 +267,8 @@ html.app-cabinet .acf-row textarea,
 html.app-cabinet .dcal-form-row input,
 html.app-cabinet .dcal-form-row select,
 html.app-cabinet .dcal-form-row textarea{
-  background:#ffffff !important;
-  border:1.5px solid #d3e2e2 !important;
+  background:var(--cab-surface) !important;
+  border:1.5px solid var(--cab-input-bd) !important;
   color:var(--tx) !important;
   border-radius:var(--rs) !important;
   box-shadow:inset 0 1px 2px rgba(16,58,64,.04) !important;
@@ -203,21 +280,26 @@ html.app-cabinet .sb:focus,
 html.app-cabinet .auth-inp:focus{
   border-color:var(--ac) !important;
   box-shadow:0 0 0 4px rgba(15,124,122,.12) !important;
-  background:#ffffff !important;
+  background:var(--cab-surface) !important;
 }
-html.app-cabinet select option{background:#ffffff !important;color:var(--tx) !important}
+html.app-cabinet select option{background:var(--cab-surface) !important;color:var(--tx) !important}
 
-/* ─── Boutons : plats, nets, sans effet 3D ─── */
-html.app-cabinet .btn{
+/* ─── Boutons : entièrement plats (aucun relief, aucun soulèvement) ─── */
+html.app-cabinet .btn,
+html.app-cabinet .btn:hover,
+html.app-cabinet .btn:active,
+html.app-cabinet .btn:focus{
   border-radius:10px !important;
   text-shadow:none !important;
   letter-spacing:.01em !important;
-  box-shadow:0 1px 2px rgba(16,58,64,.10),0 4px 12px rgba(16,58,64,.06) !important;
-  transition:transform .15s,box-shadow .15s,filter .15s !important;
+  box-shadow:none !important;
+  transform:none !important;
+  transition:filter .15s,background-color .15s,border-color .15s !important;
 }
-html.app-cabinet .btn::after{display:none !important}
-html.app-cabinet .btn:hover{transform:translateY(-1px) !important;box-shadow:0 2px 4px rgba(16,58,64,.12),0 10px 22px rgba(16,58,64,.10) !important}
-html.app-cabinet .btn:active{transform:translateY(1px) !important;box-shadow:0 1px 2px rgba(16,58,64,.12) !important}
+html.app-cabinet .btn::after,
+html.app-cabinet .btn::before{display:none !important}
+html.app-cabinet .btn:hover{filter:brightness(1.06) !important}
+html.app-cabinet .btn:active{filter:brightness(.94) !important}
 html.app-cabinet .btn-save,html.app-cabinet .btn-p{background:var(--cab-grad) !important;color:#fff !important}
 html.app-cabinet .btn-g,html.app-cabinet .btn-excel{background:linear-gradient(135deg,#2b9a6a,#38b07c) !important;color:#fff !important}
 html.app-cabinet .btn-print{background:linear-gradient(135deg,#c98a3a,#ddA552) !important;color:#fff !important}
@@ -227,10 +309,10 @@ html.app-cabinet .btn-view{background:linear-gradient(135deg,#5d4fa3,#7766c2) !i
 html.app-cabinet .btn-edit{background:linear-gradient(135deg,#d0803c,#e09a55) !important;color:#fff !important}
 html.app-cabinet .btn-del,html.app-cabinet .btn-d{background:linear-gradient(135deg,#b8414f,#d05a68) !important;color:#fff !important}
 html.app-cabinet .btn-s{
-  background:#ffffff !important;color:#2f5359 !important;
-  border:1.5px solid #cfdfdf !important;
+  background:var(--cab-surface) !important;color:var(--cab-label) !important;
+  border:1.5px solid var(--cab-input-bd) !important;
 }
-html.app-cabinet .btn-s:hover{background:#f1f8f8 !important;border-color:var(--ac) !important;color:#0f6d6b !important}
+html.app-cabinet .btn-s:hover{background:var(--cab-hover) !important;border-color:var(--ac) !important;color:var(--cab-active) !important;filter:none !important}
 html.app-cabinet .btn:focus-visible{outline:3px solid rgba(15,124,122,.35) !important;outline-offset:2px}
 
 /* Badges */
@@ -240,66 +322,66 @@ html.app-cabinet .badge{border-radius:999px !important;font-weight:800 !importan
 html.app-cabinet .mo,
 html.app-cabinet #search-overlay{background:rgba(18,50,56,.38) !important;backdrop-filter:blur(8px) !important}
 html.app-cabinet .md{
-  background:#ffffff !important;border:1px solid var(--bd) !important;
+  background:var(--cab-surface) !important;border:1px solid var(--bd) !important;
   border-radius:20px !important;
   box-shadow:0 30px 80px rgba(16,58,64,.22),0 4px 14px rgba(16,58,64,.08) !important;
 }
 html.app-cabinet .md::before{background:var(--cab-grad) !important}
-html.app-cabinet .md-title{color:#0f4f53 !important;font-size:24px !important}
-html.app-cabinet #search-box{background:#fff !important;box-shadow:0 30px 80px rgba(16,58,64,.25) !important}
+html.app-cabinet .md-title{color:var(--cab-head) !important;font-size:24px !important}
+html.app-cabinet #search-box{background:var(--cab-surface) !important;box-shadow:0 30px 80px rgba(16,58,64,.25) !important}
 
 /* ─── Écran de connexion ─── */
 html.app-cabinet #auth{
   background:
     radial-gradient(900px 520px at 85% 0%,rgba(23,161,157,.16),transparent 60%),
     radial-gradient(800px 520px at 0% 100%,rgba(45,111,166,.10),transparent 60%),
-    linear-gradient(180deg,#f6fafa,#eaf3f3) !important;
+    var(--cab-auth-bg) !important;
 }
 html.app-cabinet #auth::before,
-html.app-cabinet #auth-wallpaper::after{background:linear-gradient(135deg,rgba(246,250,250,.92),rgba(234,243,243,.90)) !important}
+html.app-cabinet #auth-wallpaper::after{background:var(--cab-veil) !important}
 html.app-cabinet .acard,
 html.app-cabinet #auth .acard{
-  background:#ffffff !important;
+  background:var(--cab-surface) !important;
   border:1px solid var(--bd) !important;
   border-radius:24px !important;
   box-shadow:0 30px 70px rgba(16,58,64,.14),0 2px 10px rgba(16,58,64,.05) !important;
 }
 html.app-cabinet .acard::before{background:var(--cab-grad) !important;height:4px !important}
 html.app-cabinet .alogo-ic{background:var(--cab-grad) !important;box-shadow:0 10px 24px rgba(15,124,122,.30) !important;border-radius:16px !important}
-html.app-cabinet .atitle{color:#0f4f53 !important;font-size:34px !important;font-weight:700 !important}
+html.app-cabinet .atitle{color:var(--cab-head) !important;font-size:34px !important;font-weight:700 !important}
 html.app-cabinet .asub{color:var(--tx3) !important}
-html.app-cabinet .at{background:#f1f7f7 !important;border:1px solid var(--bd) !important;color:var(--tx2) !important}
+html.app-cabinet .at{background:var(--cab-hover) !important;border:1px solid var(--bd) !important;color:var(--tx2) !important}
 html.app-cabinet .at.active,html.app-cabinet .at.on{background:var(--cab-grad) !important;color:#fff !important}
-html.app-cabinet #auth-time{color:#0f4f53 !important;text-shadow:none !important;font-weight:300}
+html.app-cabinet #auth-time{color:var(--cab-head) !important;text-shadow:none !important;font-weight:300}
 html.app-cabinet #auth-seconds,html.app-cabinet #auth-date,html.app-cabinet #auth-quote{color:var(--tx3) !important;text-shadow:none !important}
 html.app-cabinet #auth-weather,
 html.app-cabinet #auth-cal,
 html.app-cabinet #auth-notes-block,
 html.app-cabinet #auth-contacts-block,
 html.app-cabinet #auth-right-panel > div{
-  background:rgba(255,255,255,.88) !important;
+  background:var(--cab-glass) !important;
   border:1px solid var(--bd) !important;
   box-shadow:var(--sh2) !important;
   color:var(--tx) !important;
   backdrop-filter:none !important;
 }
-html.app-cabinet #auth-notes-area{background:#f7fbfb !important;color:var(--tx) !important;border-color:var(--bd) !important}
+html.app-cabinet #auth-notes-area{background:var(--sf2) !important;color:var(--tx) !important;border-color:var(--bd) !important}
 html.app-cabinet #auth-cal-title,
 html.app-cabinet #auth-notes-title,
 html.app-cabinet #auth-contacts-title2,
 html.app-cabinet #auth-weather-temp,
-html.app-cabinet #auth-weather-desc{color:#0f4f53 !important}
+html.app-cabinet #auth-weather-desc{color:var(--cab-head) !important}
 html.app-cabinet .auth-cal-dn{color:var(--tx2) !important}
 html.app-cabinet .auth-cal-day.today{background:rgba(15,124,122,.12) !important;border-color:var(--ac) !important}
 html.app-cabinet .auth-cal-day.today .auth-cal-dn{color:var(--ac) !important}
 
 /* ─── Navigation mobile ─── */
 html.app-cabinet #mob-bottom-nav{
-  background:rgba(255,255,255,.96) !important;
+  background:var(--cab-glass) !important;
   border-top:1px solid var(--bd) !important;
   box-shadow:0 -8px 24px rgba(16,58,64,.07) !important;
 }
-html.app-cabinet .mbn-item{color:#6c868c !important}
+html.app-cabinet .mbn-item{color:var(--tx3) !important}
 html.app-cabinet .mbn-item.active{color:var(--ac) !important}
 html.app-cabinet #mob-menu-btn{background:var(--cab-grad) !important;color:#fff !important}
 
@@ -312,33 +394,33 @@ html.app-cabinet .empty-t{color:var(--tx3) !important}
 /* Colonnes latérales de l'écran de connexion */
 html.app-cabinet #auth-wallpaper{filter:saturate(.6)}
 html.app-cabinet #auth-wallpaper::after{
-  background:linear-gradient(90deg,rgba(243,248,248,.90),rgba(243,248,248,.78) 50%,rgba(243,248,248,.90)) !important;
+  background:var(--cab-veil) !important;
 }
 html.app-cabinet #auth-bg-left,
 html.app-cabinet #auth-right-panel{
-  background:rgba(255,255,255,.35) !important;
+  background:var(--cab-glass-2) !important;
   border-color:rgba(15,84,87,.08) !important;
   backdrop-filter:blur(6px) !important;-webkit-backdrop-filter:blur(6px) !important;
 }
-html.app-cabinet #auth-todo-block{background:rgba(255,255,255,.9) !important;border:1px solid var(--bd) !important;box-shadow:var(--sh2) !important}
+html.app-cabinet #auth-todo-block{background:var(--cab-glass) !important;border:1px solid var(--bd) !important;box-shadow:var(--sh2) !important}
 html.app-cabinet #auth-todo-block > div:first-child{background:linear-gradient(135deg,#0f5457,#12807c) !important}
 html.app-cabinet #auth-todo-block > div:first-child span{color:#e6fbf9 !important}
 html.app-cabinet #auth-todo-block button{background:rgba(255,255,255,.2) !important}
-html.app-cabinet #auth-todo-form{background:#f5fafa !important}
-html.app-cabinet #auth-todo-form input,html.app-cabinet #auth-todo-form select{background:#fff !important;color:var(--tx) !important;border-color:var(--bd) !important}
+html.app-cabinet #auth-todo-form{background:var(--sf2) !important}
+html.app-cabinet #auth-todo-form input,html.app-cabinet #auth-todo-form select{background:var(--cab-surface) !important;color:var(--tx) !important;border-color:var(--bd) !important}
 
 /* Titres de cartes (sélecteur d'origine plus spécifique) */
 html.app-cabinet .tc .th .tt,
-html.app-cabinet .tc .th .dcard-t{color:#0f4f53 !important;font-family:var(--cab-serif) !important;font-size:20px !important;font-weight:700 !important}
+html.app-cabinet .tc .th .dcard-t{color:var(--cab-head) !important;font-family:var(--cab-serif) !important;font-size:20px !important;font-weight:700 !important}
 /* Chiffres alignés (la police à empattements utilise sinon des chiffres « elzéviriens ») */
 html.app-cabinet .sv,
 html.app-cabinet .tbtitle,
 html.app-cabinet #auth-time{font-variant-numeric:lining-nums tabular-nums}
 html.app-cabinet .sv{font-family:var(--cab-sans) !important;font-weight:800 !important;font-size:32px !important;letter-spacing:-.02em !important}
 /* Calendrier de l'écran de connexion */
-html.app-cabinet .auth-cal-dow{color:#8aa1a6 !important}
+html.app-cabinet .auth-cal-dow{color:var(--cab-muted) !important}
 html.app-cabinet .auth-cal-dow.we{color:#c9707e !important}
-html.app-cabinet .auth-cal-day:hover{background:#eef6f6 !important}
+html.app-cabinet .auth-cal-day:hover{background:var(--cab-hover) !important}
 
 /* Mobile : le bouton menu (fixe, 44px) ne recouvre plus le titre de la page */
 @media(max-width:768px){
@@ -348,6 +430,31 @@ html.app-cabinet .auth-cal-day:hover{background:#eef6f6 !important}
 }
 
 /* Écran « Chargement… » */
-html.app-cabinet #supa-loading{background:rgba(243,247,247,.82) !important;backdrop-filter:blur(6px)}
+html.app-cabinet #supa-loading{background:var(--cab-veil) !important;backdrop-filter:blur(6px)}
 html.app-cabinet #supa-loading > div{border-color:rgba(15,124,122,.18) !important;border-top-color:#0f7c7a !important}
-html.app-cabinet #supa-loading > span{color:#0f4f53 !important;font-family:var(--cab-sans) !important;font-weight:700;letter-spacing:.04em}
+html.app-cabinet #supa-loading > span{color:var(--cab-head) !important;font-family:var(--cab-sans) !important;font-weight:700;letter-spacing:.04em}
+
+/* Pas de rotation de la fenêtre : bouton portrait/paysage retiré */
+html.app-cabinet #orient-btn{display:none !important}
+html.app-cabinet #app{transform:none !important}
+
+/* Indicateurs de chargement sans rotation : pulsation douce */
+@keyframes cabPulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+html.app-cabinet #supa-loading > div{
+  animation:cabPulse 1.2s ease-in-out infinite !important;
+  border:none !important;background:var(--cab-grad) !important;
+  width:22px !important;height:22px !important;
+}
+html.app-cabinet [style*="_spin"]{animation:cabPulse 1.2s ease-in-out infinite !important}
+
+/* Bouton Jour / Nuit / Auto dans la barre du haut */
+#cab-mode-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-width:40px;min-height:40px;padding:0 12px;margin-right:8px;
+  border-radius:10px;border:1px solid var(--bd2);background:var(--sf2);
+  color:var(--tx2);font:700 12px var(--cab-sans);cursor:pointer;
+  transition:background-color .2s,border-color .2s,color .2s;
+}
+#cab-mode-btn:hover{border-color:var(--ac);color:var(--ac)}
+#cab-mode-btn .cab-mode-ic{font-size:16px;line-height:1}
+@media(max-width:768px){#cab-mode-btn .cab-mode-lbl{display:none}#cab-mode-btn{padding:0;margin-right:6px}}

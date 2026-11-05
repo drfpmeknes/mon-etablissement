@@ -23,6 +23,68 @@
     }
   } catch (e) { /* rien */ }
 
+  // ── Mode Jour / Nuit ──────────────────────────────────────────────
+  // « auto » (par défaut) : jour de 7 h à 19 h, nuit le reste du temps.
+  // Le choix (auto / jour / nuit) est mémorisé sur l'appareil.
+  var CLE_MODE = 'edumgr_cab_mode';
+  var MODES = {
+    auto: { ic: '🌓', lbl: 'Auto', titre: 'Mode automatique (jour 7 h – 19 h, nuit sinon) — cliquer pour passer en mode Jour' },
+    jour: { ic: '☀️', lbl: 'Jour', titre: 'Mode Jour — cliquer pour passer en mode Nuit' },
+    nuit: { ic: '🌙', lbl: 'Nuit', titre: 'Mode Nuit — cliquer pour revenir au mode automatique' }
+  };
+  function lireMode() {
+    try { var m = localStorage.getItem(CLE_MODE); if (MODES[m]) return m; } catch (e) {}
+    return 'auto';
+  }
+  function ecrireMode(m) { try { localStorage.setItem(CLE_MODE, m); } catch (e) {} }
+  function estNuit(m) {
+    if (m === 'jour') return false;
+    if (m === 'nuit') return true;
+    var h = new Date().getHours();
+    return h >= 19 || h < 7;
+  }
+  function appliquerMode() {
+    var m = lireMode();
+    var nuit = estNuit(m);
+    root.classList.toggle('cab-nuit', nuit);
+    if (meta) meta.setAttribute('content', nuit ? '#0c3a3d' : '#0f5457');
+    var b = document.getElementById('cab-mode-btn');
+    if (b) {
+      b.innerHTML = '<span class="cab-mode-ic">' + MODES[m].ic + '</span><span class="cab-mode-lbl">' + MODES[m].lbl + '</span>';
+      b.title = MODES[m].titre;
+    }
+  }
+  window.cabBasculerMode = function () {
+    var ordre = ['auto', 'jour', 'nuit'];
+    ecrireMode(ordre[(ordre.indexOf(lireMode()) + 1) % ordre.length]);
+    appliquerMode();
+  };
+  function installerBouton() {
+    if (document.getElementById('cab-mode-btn')) return;
+    var b = document.createElement('button');
+    b.id = 'cab-mode-btn';
+    b.type = 'button';
+    b.onclick = window.cabBasculerMode;
+    var cloche = document.getElementById('notif-btn');
+    if (cloche && cloche.parentNode) cloche.parentNode.insertBefore(b, cloche);
+    else return;
+    appliquerMode();
+  }
+  appliquerMode();
+  setInterval(appliquerMode, 60 * 1000); // bascule automatique à 7 h et 19 h
+
+  // ── Pas de rotation de la fenêtre (bouton portrait/paysage neutralisé)
+  function neutraliserRotation() {
+    window.toggleOrientation = function () {};
+    var app = document.getElementById('app');
+    if (app && app.style.transform) app.style.transform = '';
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    installerBouton();
+    neutraliserRotation();
+  });
+
   var natif = window.EduManagerNatif; // fourni par MainActivity (Android uniquement)
   if (!natif) return;
   root.classList.add('app-android');
