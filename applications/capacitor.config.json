@@ -1,0 +1,10 @@
+{
+  "appId": "ma.drfp.edumanager",
+  "appName": "EduManager Pro",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#f3f7f7",
+    "allowMixedContent": false,
+    "adjustMarginsForEdgeToEdge": "force"
+  }
+}

@@ -1,0 +1,353 @@
+/* ══════════════════════════════════════════════════════════════════
+   EDUMANAGER PRO — THÈME « CABINET »
+   Style clair et élégant inspiré des logiciels de cabinet médical :
+   fond ivoire-menthe, blanc pur, sarcelle profonde, ombres douces.
+   Ce fichier est injecté UNIQUEMENT dans les applications Windows et
+   Android (voir applications/scripts/build-www.js). Le site web garde
+   son apparence d'origine.
+   Les variables sont déclarées en !important pour primer sur les
+   couleurs appliquées en ligne par « Paramètres › Apparence ».
+   ══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap');
+
+html.app-cabinet{
+  --bg:#f3f7f7 !important;
+  --sf:#ffffff !important;
+  --sf2:#f5f9f9 !important;
+  --sf3:#e9f1f1 !important;
+  --sf-rgb:255,255,255 !important;
+  --bd:#dde8e8 !important;
+  --bd2:#c9dada !important;
+  --tx:#163238 !important;
+  --tx2:#3e5c63 !important;
+  --tx3:#6c868c !important;
+  --ac:#0f7c7a !important;
+  --ac2:#17a19d !important;
+  --acd:rgba(15,124,122,.09) !important;
+  --gr:#2b9a6a !important;
+  --grd:rgba(43,154,106,.10) !important;
+  --rd:#c44a5c !important;
+  --rdd:rgba(196,74,92,.09) !important;
+  --bl:#2d6fa6 !important;
+  --bld:rgba(45,111,166,.09) !important;
+  --pu:#6a5bb0 !important;
+  --pud:rgba(106,91,176,.09) !important;
+  --or:#c98a3a !important;
+  --r:14px !important;
+  --rs:10px !important;
+  --sh:0 18px 48px rgba(16,58,64,.12),0 2px 8px rgba(16,58,64,.06) !important;
+  --sh2:0 6px 22px rgba(16,58,64,.08) !important;
+  --th-bg:#0f5457 !important;
+  --th-color:#ffffff !important;
+  --th-border:#0f545730 !important;
+  --ni-color:#3e5c63 !important;
+  --cab-serif:'Cormorant Garamond','Playfair Display',Georgia,serif;
+  --cab-sans:'Nunito Sans','DM Sans',system-ui,sans-serif;
+  --cab-grad:linear-gradient(135deg,#0f7c7a 0%,#12908c 55%,#1aa7a0 100%);
+  color-scheme:light;
+}
+
+html.app-cabinet body{
+  font-family:var(--cab-sans);
+  background:
+    radial-gradient(1200px 600px at 100% -10%,rgba(23,161,157,.07),transparent 60%),
+    radial-gradient(900px 500px at -10% 110%,rgba(45,111,166,.05),transparent 60%),
+    var(--bg) !important;
+  color:var(--tx);
+}
+html.app-cabinet ::selection{background:rgba(15,124,122,.18)}
+
+/* Fond d'écran photo : voile clair */
+html.app-cabinet #app-wallpaper::after,
+html.app-cabinet .dark-theme #app-wallpaper::after{
+  background:linear-gradient(135deg,rgba(243,247,247,.93),rgba(255,255,255,.90)) !important;
+}
+
+/* ─── Barres de défilement fines ─── */
+html.app-cabinet *{scrollbar-color:#c9dada transparent}
+html.app-cabinet ::-webkit-scrollbar{width:9px;height:9px}
+html.app-cabinet ::-webkit-scrollbar-thumb{background:#cfdede;border-radius:9px;border:2px solid transparent;background-clip:padding-box}
+html.app-cabinet ::-webkit-scrollbar-track{background:transparent}
+
+/* ─── Typographie ─── */
+html.app-cabinet .tbtitle,
+html.app-cabinet .atitle,
+html.app-cabinet .md-title,
+html.app-cabinet .slogo-t,
+html.app-cabinet .sv{
+  font-family:var(--cab-serif) !important;
+  letter-spacing:0 !important;
+}
+html.app-cabinet .tbtitle{color:#0f4f53 !important;font-weight:700 !important;font-size:27px !important}
+html.app-cabinet .tbsub{color:var(--tx3) !important}
+html.app-cabinet .sv{color:#0f4f53;font-weight:700;font-size:36px}
+html.app-cabinet .sl{color:var(--tx3);letter-spacing:.09em}
+html.app-cabinet .btn,
+html.app-cabinet input,
+html.app-cabinet select,
+html.app-cabinet textarea{font-family:var(--cab-sans) !important}
+
+/* ─── Barre latérale ─── */
+html.app-cabinet .sidebar,
+html.app-cabinet .dark-theme .sidebar{
+  background:#ffffff !important;
+  backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+  border-right:1px solid var(--bd) !important;
+  box-shadow:4px 0 28px rgba(16,58,64,.05) !important;
+}
+html.app-cabinet .slogo{border-bottom:1px solid var(--bd) !important;padding:18px 14px !important}
+html.app-cabinet .slogo-ic{
+  background:var(--cab-grad) !important;
+  box-shadow:0 6px 16px rgba(15,124,122,.28) !important;
+  border-radius:12px !important;color:#fff;
+}
+html.app-cabinet .slogo-t{color:#0f4f53 !important;font-size:17px !important;font-weight:700}
+html.app-cabinet .nsec-lbl{color:#8aa1a6 !important;letter-spacing:.16em !important}
+html.app-cabinet .nsec-toggle{background:var(--acd) !important;color:var(--ac) !important}
+html.app-cabinet .ni{color:var(--ni-color) !important;border-radius:10px !important;font-weight:600}
+html.app-cabinet .ni:hover{background:#eef6f6 !important;color:#0f4f53 !important}
+html.app-cabinet .ni.active{
+  background:linear-gradient(90deg,rgba(15,124,122,.13),rgba(15,124,122,.03)) !important;
+  color:#0f6d6b !important;border-left:3px solid var(--ac) !important;
+}
+html.app-cabinet .ni .ni-lbl,
+html.app-cabinet .ni span:not(.badge){color:inherit !important}
+html.app-cabinet .sidebar-toggle{background:#eef6f6 !important;border-color:var(--ac) !important;color:var(--ac) !important}
+html.app-cabinet .sidebar-toggle:hover{background:var(--ac) !important;color:#fff !important}
+html.app-cabinet .susr{border-top:1px solid var(--bd) !important}
+html.app-cabinet .uav{background:var(--cab-grad) !important;color:#fff;box-shadow:0 3px 10px rgba(15,124,122,.25) !important}
+html.app-cabinet #ac-search,html.app-cabinet #ac-search-wrap input{background:var(--sf2) !important;color:var(--tx) !important;border-color:var(--bd) !important}
+
+/* ─── Barre du haut ─── */
+html.app-cabinet .topbar,
+html.app-cabinet .dark-theme .topbar{
+  background:rgba(255,255,255,.88) !important;
+  backdrop-filter:blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(160%) !important;
+  border-bottom:1px solid var(--bd) !important;
+  box-shadow:0 1px 0 rgba(255,255,255,.8),0 6px 20px rgba(16,58,64,.04) !important;
+}
+
+/* ─── Cartes, panneaux, statistiques ─── */
+html.app-cabinet .tc,
+html.app-cabinet .dark-theme .tc,
+html.app-cabinet .dcard,
+html.app-cabinet .sc,
+html.app-cabinet .ppanel,
+html.app-cabinet .nmod-card{
+  background:#ffffff !important;
+  border:1px solid var(--bd) !important;
+  border-radius:var(--r) !important;
+  box-shadow:var(--sh2) !important;
+}
+html.app-cabinet .sc:hover{box-shadow:0 14px 34px rgba(16,58,64,.11) !important}
+html.app-cabinet .sc::before{height:4px !important}
+html.app-cabinet .sc.or::before{background:var(--cab-grad) !important}
+html.app-cabinet .th{
+  background:linear-gradient(90deg,rgba(15,124,122,.07),#ffffff) !important;
+  border-bottom:1px solid var(--bd) !important;
+}
+html.app-cabinet .tt,
+html.app-cabinet .dcard-t{color:#0f4f53 !important;font-family:var(--cab-serif) !important;font-size:19px !important;font-weight:700 !important;letter-spacing:0 !important;text-transform:none !important}
+
+/* ─── Tableaux ─── */
+html.app-cabinet th,
+html.app-cabinet .tc thead th,
+html.app-cabinet .tbl-scroll thead th,
+html.app-cabinet .tbl-scroll table thead tr th,
+html.app-cabinet table.tbl-main thead th,
+html.app-cabinet .ntable thead th,
+html.app-cabinet .prog-table thead th{
+  background:#0f5457 !important;
+  color:#ffffff !important;
+  text-shadow:none !important;
+  border-bottom:none !important;
+  letter-spacing:.08em !important;
+}
+html.app-cabinet td{background:#ffffff;border-bottom:1px solid #edf3f3 !important;color:var(--tx)}
+html.app-cabinet tbody tr:nth-child(even) td{background:#fafcfc}
+html.app-cabinet tr:hover td{background:#eff7f7 !important}
+
+/* ─── Formulaires ─── */
+html.app-cabinet .fg label,
+html.app-cabinet .acf-row label,
+html.app-cabinet .dcal-form-row label{
+  font-family:var(--cab-sans) !important;
+  color:#2f6066 !important;
+  font-size:11.5px !important;letter-spacing:.12em !important;font-weight:800 !important;
+}
+html.app-cabinet .fg input,
+html.app-cabinet .fg select,
+html.app-cabinet .fg textarea,
+html.app-cabinet .sb,
+html.app-cabinet .isel,
+html.app-cabinet .ninp,
+html.app-cabinet .auth-inp,
+html.app-cabinet .acf-row input,
+html.app-cabinet .acf-row select,
+html.app-cabinet .acf-row textarea,
+html.app-cabinet .dcal-form-row input,
+html.app-cabinet .dcal-form-row select,
+html.app-cabinet .dcal-form-row textarea{
+  background:#ffffff !important;
+  border:1.5px solid #d3e2e2 !important;
+  color:var(--tx) !important;
+  border-radius:var(--rs) !important;
+  box-shadow:inset 0 1px 2px rgba(16,58,64,.04) !important;
+}
+html.app-cabinet .fg input:focus,
+html.app-cabinet .fg select:focus,
+html.app-cabinet .fg textarea:focus,
+html.app-cabinet .sb:focus,
+html.app-cabinet .auth-inp:focus{
+  border-color:var(--ac) !important;
+  box-shadow:0 0 0 4px rgba(15,124,122,.12) !important;
+  background:#ffffff !important;
+}
+html.app-cabinet select option{background:#ffffff !important;color:var(--tx) !important}
+
+/* ─── Boutons : plats, nets, sans effet 3D ─── */
+html.app-cabinet .btn{
+  border-radius:10px !important;
+  text-shadow:none !important;
+  letter-spacing:.01em !important;
+  box-shadow:0 1px 2px rgba(16,58,64,.10),0 4px 12px rgba(16,58,64,.06) !important;
+  transition:transform .15s,box-shadow .15s,filter .15s !important;
+}
+html.app-cabinet .btn::after{display:none !important}
+html.app-cabinet .btn:hover{transform:translateY(-1px) !important;box-shadow:0 2px 4px rgba(16,58,64,.12),0 10px 22px rgba(16,58,64,.10) !important}
+html.app-cabinet .btn:active{transform:translateY(1px) !important;box-shadow:0 1px 2px rgba(16,58,64,.12) !important}
+html.app-cabinet .btn-save,html.app-cabinet .btn-p{background:var(--cab-grad) !important;color:#fff !important}
+html.app-cabinet .btn-g,html.app-cabinet .btn-excel{background:linear-gradient(135deg,#2b9a6a,#38b07c) !important;color:#fff !important}
+html.app-cabinet .btn-print{background:linear-gradient(135deg,#c98a3a,#ddA552) !important;color:#fff !important}
+html.app-cabinet .btn-word,html.app-cabinet .btn-notes{background:linear-gradient(135deg,#245f93,#2f78b4) !important;color:#fff !important}
+html.app-cabinet .btn-email{background:linear-gradient(135deg,#127a8a,#1b98a8) !important;color:#fff !important}
+html.app-cabinet .btn-view{background:linear-gradient(135deg,#5d4fa3,#7766c2) !important;color:#fff !important}
+html.app-cabinet .btn-edit{background:linear-gradient(135deg,#d0803c,#e09a55) !important;color:#fff !important}
+html.app-cabinet .btn-del,html.app-cabinet .btn-d{background:linear-gradient(135deg,#b8414f,#d05a68) !important;color:#fff !important}
+html.app-cabinet .btn-s{
+  background:#ffffff !important;color:#2f5359 !important;
+  border:1.5px solid #cfdfdf !important;
+}
+html.app-cabinet .btn-s:hover{background:#f1f8f8 !important;border-color:var(--ac) !important;color:#0f6d6b !important}
+html.app-cabinet .btn:focus-visible{outline:3px solid rgba(15,124,122,.35) !important;outline-offset:2px}
+
+/* Badges */
+html.app-cabinet .badge{border-radius:999px !important;font-weight:800 !important}
+
+/* ─── Fenêtres modales ─── */
+html.app-cabinet .mo,
+html.app-cabinet #search-overlay{background:rgba(18,50,56,.38) !important;backdrop-filter:blur(8px) !important}
+html.app-cabinet .md{
+  background:#ffffff !important;border:1px solid var(--bd) !important;
+  border-radius:20px !important;
+  box-shadow:0 30px 80px rgba(16,58,64,.22),0 4px 14px rgba(16,58,64,.08) !important;
+}
+html.app-cabinet .md::before{background:var(--cab-grad) !important}
+html.app-cabinet .md-title{color:#0f4f53 !important;font-size:24px !important}
+html.app-cabinet #search-box{background:#fff !important;box-shadow:0 30px 80px rgba(16,58,64,.25) !important}
+
+/* ─── Écran de connexion ─── */
+html.app-cabinet #auth{
+  background:
+    radial-gradient(900px 520px at 85% 0%,rgba(23,161,157,.16),transparent 60%),
+    radial-gradient(800px 520px at 0% 100%,rgba(45,111,166,.10),transparent 60%),
+    linear-gradient(180deg,#f6fafa,#eaf3f3) !important;
+}
+html.app-cabinet #auth::before,
+html.app-cabinet #auth-wallpaper::after{background:linear-gradient(135deg,rgba(246,250,250,.92),rgba(234,243,243,.90)) !important}
+html.app-cabinet .acard,
+html.app-cabinet #auth .acard{
+  background:#ffffff !important;
+  border:1px solid var(--bd) !important;
+  border-radius:24px !important;
+  box-shadow:0 30px 70px rgba(16,58,64,.14),0 2px 10px rgba(16,58,64,.05) !important;
+}
+html.app-cabinet .acard::before{background:var(--cab-grad) !important;height:4px !important}
+html.app-cabinet .alogo-ic{background:var(--cab-grad) !important;box-shadow:0 10px 24px rgba(15,124,122,.30) !important;border-radius:16px !important}
+html.app-cabinet .atitle{color:#0f4f53 !important;font-size:34px !important;font-weight:700 !important}
+html.app-cabinet .asub{color:var(--tx3) !important}
+html.app-cabinet .at{background:#f1f7f7 !important;border:1px solid var(--bd) !important;color:var(--tx2) !important}
+html.app-cabinet .at.active,html.app-cabinet .at.on{background:var(--cab-grad) !important;color:#fff !important}
+html.app-cabinet #auth-time{color:#0f4f53 !important;text-shadow:none !important;font-weight:300}
+html.app-cabinet #auth-seconds,html.app-cabinet #auth-date,html.app-cabinet #auth-quote{color:var(--tx3) !important;text-shadow:none !important}
+html.app-cabinet #auth-weather,
+html.app-cabinet #auth-cal,
+html.app-cabinet #auth-notes-block,
+html.app-cabinet #auth-contacts-block,
+html.app-cabinet #auth-right-panel > div{
+  background:rgba(255,255,255,.88) !important;
+  border:1px solid var(--bd) !important;
+  box-shadow:var(--sh2) !important;
+  color:var(--tx) !important;
+  backdrop-filter:none !important;
+}
+html.app-cabinet #auth-notes-area{background:#f7fbfb !important;color:var(--tx) !important;border-color:var(--bd) !important}
+html.app-cabinet #auth-cal-title,
+html.app-cabinet #auth-notes-title,
+html.app-cabinet #auth-contacts-title2,
+html.app-cabinet #auth-weather-temp,
+html.app-cabinet #auth-weather-desc{color:#0f4f53 !important}
+html.app-cabinet .auth-cal-dn{color:var(--tx2) !important}
+html.app-cabinet .auth-cal-day.today{background:rgba(15,124,122,.12) !important;border-color:var(--ac) !important}
+html.app-cabinet .auth-cal-day.today .auth-cal-dn{color:var(--ac) !important}
+
+/* ─── Navigation mobile ─── */
+html.app-cabinet #mob-bottom-nav{
+  background:rgba(255,255,255,.96) !important;
+  border-top:1px solid var(--bd) !important;
+  box-shadow:0 -8px 24px rgba(16,58,64,.07) !important;
+}
+html.app-cabinet .mbn-item{color:#6c868c !important}
+html.app-cabinet .mbn-item.active{color:var(--ac) !important}
+html.app-cabinet #mob-menu-btn{background:var(--cab-grad) !important;color:#fff !important}
+
+/* Toasts */
+html.app-cabinet #toast-container > *{border-radius:12px !important;box-shadow:0 12px 30px rgba(16,58,64,.18) !important}
+
+/* Filigrane / divers */
+html.app-cabinet .empty-t{color:var(--tx3) !important}
+
+/* Colonnes latérales de l'écran de connexion */
+html.app-cabinet #auth-wallpaper{filter:saturate(.6)}
+html.app-cabinet #auth-wallpaper::after{
+  background:linear-gradient(90deg,rgba(243,248,248,.90),rgba(243,248,248,.78) 50%,rgba(243,248,248,.90)) !important;
+}
+html.app-cabinet #auth-bg-left,
+html.app-cabinet #auth-right-panel{
+  background:rgba(255,255,255,.35) !important;
+  border-color:rgba(15,84,87,.08) !important;
+  backdrop-filter:blur(6px) !important;-webkit-backdrop-filter:blur(6px) !important;
+}
+html.app-cabinet #auth-todo-block{background:rgba(255,255,255,.9) !important;border:1px solid var(--bd) !important;box-shadow:var(--sh2) !important}
+html.app-cabinet #auth-todo-block > div:first-child{background:linear-gradient(135deg,#0f5457,#12807c) !important}
+html.app-cabinet #auth-todo-block > div:first-child span{color:#e6fbf9 !important}
+html.app-cabinet #auth-todo-block button{background:rgba(255,255,255,.2) !important}
+html.app-cabinet #auth-todo-form{background:#f5fafa !important}
+html.app-cabinet #auth-todo-form input,html.app-cabinet #auth-todo-form select{background:#fff !important;color:var(--tx) !important;border-color:var(--bd) !important}
+
+/* Titres de cartes (sélecteur d'origine plus spécifique) */
+html.app-cabinet .tc .th .tt,
+html.app-cabinet .tc .th .dcard-t{color:#0f4f53 !important;font-family:var(--cab-serif) !important;font-size:20px !important;font-weight:700 !important}
+/* Chiffres alignés (la police à empattements utilise sinon des chiffres « elzéviriens ») */
+html.app-cabinet .sv,
+html.app-cabinet .tbtitle,
+html.app-cabinet #auth-time{font-variant-numeric:lining-nums tabular-nums}
+html.app-cabinet .sv{font-family:var(--cab-sans) !important;font-weight:800 !important;font-size:32px !important;letter-spacing:-.02em !important}
+/* Calendrier de l'écran de connexion */
+html.app-cabinet .auth-cal-dow{color:#8aa1a6 !important}
+html.app-cabinet .auth-cal-dow.we{color:#c9707e !important}
+html.app-cabinet .auth-cal-day:hover{background:#eef6f6 !important}
+
+/* Mobile : le bouton menu (fixe, 44px) ne recouvre plus le titre de la page */
+@media(max-width:768px){
+  html.app-cabinet .topbar{padding-left:72px !important;min-height:72px}
+  html.app-cabinet .tbtitle{font-size:24px !important}
+  html.app-cabinet #mob-menu-btn{box-shadow:0 6px 18px rgba(15,124,122,.35) !important;border-radius:12px !important}
+}
+
+/* Écran « Chargement… » */
+html.app-cabinet #supa-loading{background:rgba(243,247,247,.82) !important;backdrop-filter:blur(6px)}
+html.app-cabinet #supa-loading > div{border-color:rgba(15,124,122,.18) !important;border-top-color:#0f7c7a !important}
+html.app-cabinet #supa-loading > span{color:#0f4f53 !important;font-family:var(--cab-sans) !important;font-weight:700;letter-spacing:.04em}

@@ -2,7 +2,7 @@
   "name": "EduManager Pro",
   "short_name": "EduManager",
   "description": "Gestion d'établissement de formation professionnelle",
-  "start_url": "./etablissement.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d0d0d",
