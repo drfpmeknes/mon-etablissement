@@ -1,0 +1,64 @@
+{
+  "name": "edumanager-pro",
+  "productName": "EduManager Pro",
+  "version": "2.7.0",
+  "description": "EduManager Pro — gestion d'établissement de formation professionnelle",
+  "author": "DRFP Meknès",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "windows/main.js",
+  "scripts": {
+    "www": "node scripts/build-www.js",
+    "windows": "npm run www && electron .",
+    "build:windows": "npm run www && electron-builder --win --x64 --publish never",
+    "build:android": "npm run www && node scripts/prepare-android.js"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.4.0",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.0",
+    "@capacitor/core": "^7.4.0",
+    "@emailjs/browser": "^4.4.1",
+    "@supabase/supabase-js": "^2.119.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "html2canvas": "1.4.1",
+    "jspdf": "2.5.1",
+    "jszip": "3.10.1",
+    "xlsx": "0.18.5"
+  },
+  "build": {
+    "appId": "ma.drfp.edumanager",
+    "productName": "EduManager Pro",
+    "copyright": "DRFP Meknès",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "windows/**",
+      "www/**",
+      "assets/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "icon": "assets/icon.png",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "artifactName": "EduManagerPro-${version}-${arch}-${target}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "EduManager Pro",
+      "artifactName": "EduManagerPro-Installation-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "EduManagerPro-Portable-${version}.${ext}"
+    }
+  }
+}

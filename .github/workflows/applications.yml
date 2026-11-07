@@ -1,0 +1,86 @@
+name: Applications Windows et Android
+
+on:
+  push:
+    branches: [ main, 'claude/**' ]
+    paths:
+      - 'index.html'
+      - '*.png'
+      - '*.jpg'
+      - 'applications/**'
+      - '.github/workflows/applications.yml'
+  workflow_dispatch:
+
+jobs:
+  android:
+    name: Android (APK)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: applications
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: applications/package-lock.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Le SDK Android est déjà installé sur les machines GitHub (ubuntu-latest)
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Préparer le projet Android (thème Cabinet, icônes, code natif)
+        run: npm run build:android
+
+      - name: Compiler l'APK
+        working-directory: applications/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Renommer l'APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk EduManagerPro.apk
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: EduManagerPro-Android
+          path: applications/EduManagerPro.apk
+
+  windows:
+    name: Windows (EXE)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: applications
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: applications/package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Compiler l'application Windows
+        run: npm run build:windows
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: EduManagerPro-Windows
+          path: |
+            applications/dist/*.exe
