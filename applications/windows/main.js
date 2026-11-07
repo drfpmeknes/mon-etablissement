@@ -49,6 +49,11 @@ function creerFenetre() {
         overrideBrowserWindowOptions: {
           width: 1100, height: 850, autoHideMenuBar: true,
           backgroundColor: '#ffffff', title: 'Impression — EduManager Pro',
+          webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+          },
           icon: path.join(__dirname, '..', 'assets', 'icon.png')
         }
       };
@@ -62,6 +67,14 @@ function creerFenetre() {
 
   fenetre.loadURL(ORIGINE + '/index.html');
 }
+
+// Impression avec l'orientation demandée par la page (paysage / portrait)
+ipcMain.on('edumanager:imprimer', (ev, opts) => {
+  const paysage = !!(opts && opts.paysage);
+  ev.sender.print({ silent: false, printBackground: true, landscape: paysage }, (ok, raison) => {
+    if (!ok && raison && raison !== 'cancelled') console.error('Impression :', raison);
+  });
+});
 
 ipcMain.on('edumanager:deconnexion', (ev) => {
   const w = BrowserWindow.fromWebContents(ev.sender);

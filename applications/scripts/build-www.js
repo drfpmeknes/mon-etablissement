@@ -1,6 +1,7 @@
 // Prépare le dossier applications/www à partir de l'index.html du site :
-// copie l'application, puis y ajoute le thème « Cabinet » et les adaptations
-// Windows / Android. Le site web (index.html à la racine) n'est pas modifié.
+// copie l'application (le thème « Cabinet » est déjà dans index.html), puis
+// y ajoute les bibliothèques embarquées et les adaptations Windows / Android.
+// Le site web (index.html à la racine) n'est pas modifié.
 const fs = require('fs');
 const path = require('path');
 
@@ -17,7 +18,7 @@ for (const f of fs.readdirSync(racine)) {
     fs.copyFileSync(path.join(racine, f), path.join(www, f));
   }
 }
-for (const f of ['theme-cabinet.css', 'app-runtime.js']) {
+for (const f of ['app-runtime.js']) {
   fs.copyFileSync(path.join(apps, 'theme', f), path.join(www, f));
 }
 
@@ -43,18 +44,10 @@ for (const [url, rel] of Object.entries(libs)) {
   html = html.split(url).join(local);
 }
 
-const tete = '<head>';
-if (!html.includes(tete)) throw new Error('Balise <head> introuvable dans index.html');
-html = html.replace(tete, tete + '\n<script src="app-runtime.js"></script>');
-
-// Le thème est chargé en dernier dans <head> pour primer sur les styles d'origine.
-const finTete = html.indexOf('</head>');
-if (finTete < 0) throw new Error('Balise </head> introuvable dans index.html');
-html = html.slice(0, finTete) +
-  '<link rel="stylesheet" href="theme-cabinet.css">\n' +
-  html.slice(finTete);
-
-html = html.replace('<html lang="fr">', '<html lang="fr" class="app-cabinet">');
+// Juste après <meta charset> (qui doit rester dans les premiers octets du fichier)
+const ancre = html.includes('<meta charset="UTF-8">') ? '<meta charset="UTF-8">' : '<head>';
+if (!html.includes(ancre)) throw new Error('Balise <head> introuvable dans index.html');
+html = html.replace(ancre, ancre + '\n<script src="app-runtime.js"></script>');
 
 fs.writeFileSync(path.join(www, 'index.html'), html);
 console.log('applications/www prêt (' + Math.round(html.length / 1024) + ' Ko)');

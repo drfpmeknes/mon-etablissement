@@ -3,8 +3,9 @@
 Les deux applications sont construites à partir du même `index.html` (celui du site),
 avec en plus :
 
-- le **thème « Cabinet »** : clair et élégant (blanc, sarcelle profonde, titres à empattements),
-  dans l'esprit des logiciels de cabinet médical. Le site web garde son apparence d'origine ;
+- le **thème « Cabinet »** (sarcelle, boutons 3D, feuilles qui tournent, mode Jour/Nuit
+  automatique) : il est écrit directement dans `index.html`, donc identique sur le site web
+  et dans les applications ;
 - les bibliothèques (Supabase, Excel, PDF…) **embarquées** dans l'application : elle démarre
   et fonctionne en mode hors-ligne même sans Internet ;
 - sur **Android** : impression native (ou « Enregistrer en PDF »), fichiers Excel / Word / PDF
@@ -41,9 +42,9 @@ npm run build:android    # prépare applications/android (puis Android Studio : 
 
 | Chemin | Rôle |
 |---|---|
-| `theme/theme-cabinet.css` | le thème « Cabinet » (couleurs, typographie, boutons, tableaux…) |
-| `theme/app-runtime.js` | adaptations communes (thème, service worker désactivé, pont Android) |
-| `scripts/build-www.js` | copie `index.html` dans `www/` et y ajoute le thème et les bibliothèques |
+| `../index.html` (`#cab-theme-css`, `#cab-theme-js`) | le thème « Cabinet » et le mode Jour/Nuit, communs au site et aux applications |
+| `theme/app-runtime.js` | adaptations des applications (service worker désactivé, impression Windows en paysage, pont Android) |
+| `scripts/build-www.js` | copie `index.html` dans `www/` et y ajoute les bibliothèques embarquées |
 | `windows/` | application Windows (Electron) |
 | `android-natif/MainActivity.java` | code natif Android : impression, enregistrement de fichiers, liens |
 | `assets/` | icône et écran de démarrage |
