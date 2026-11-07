@@ -32382,6 +32382,7 @@ function printEtatInscriptions(exportWord=false){
   };
 
   let pages = '';
+  const pagesListe = [];
 
   filieres.forEach(fi => {
     const stags = DB.stagiaires
@@ -32398,11 +32399,18 @@ function printEtatInscriptions(exportWord=false){
       const secteur = fi.secteur || '—';
       const typeForm = fi.type_formation || 'Cours du Jour';
 
-      let rows = '';
-      ss.forEach((s,i) => {
-        const p = s.passerelle ? 'O' : 'N';
-        const r = s.redoublant ? 'O' : 'N';
-        rows += `<tr>
+      // Pagination : 25 stagiaires maximum par page. Pour une classe plus
+      // nombreuse, l'en-tete (ministere, etablissement, filiere, classe) et
+      // les titres de colonnes sont repetes en haut de chaque page.
+      const PAR_PAGE = 25;
+      const nbPages = Math.max(1, Math.ceil(ss.length / PAR_PAGE));
+      for(let pg = 0; pg < nbPages; pg++){
+        const lot = ss.slice(pg*PAR_PAGE, (pg+1)*PAR_PAGE);
+        let rows = '';
+        lot.forEach(s => {
+          const p = s.passerelle ? 'O' : 'N';
+          const r = s.redoublant ? 'O' : 'N';
+          rows += `<tr>
           <td style="width:9%">${s.ninsc||'—'}</td>
           <td style="width:18%;font-weight:600">${(s.nom||'').toUpperCase()} ${s.prenom||''}</td>
           <td style="width:8%;font-family:monospace">${s.cin||'—'}</td>
@@ -32412,9 +32420,9 @@ function printEtatInscriptions(exportWord=false){
           <td style="width:3%;text-align:center;font-weight:700">${r}</td>
           <td style="width:43%">${s.adresse||''}</td>
         </tr>`;
-      });
+        });
 
-      pages += `
+        pagesListe.push(`
       <div class="page">
         <div class="entete-min">
           <div class="min-titre">${nomMinistere}</div>
@@ -32461,13 +32469,16 @@ function printEtatInscriptions(exportWord=false){
         </table>
 
         <div class="pied-page">
-          <div class="nb-stag">Nombre Stagiaires : <b>${ss.length}</b></div>
+          <div class="nb-stag">Nombre Stagiaires : <b>${ss.length}</b>${nbPages>1?` &nbsp;—&nbsp; stagiaires ${pg*PAR_PAGE+1} à ${pg*PAR_PAGE+lot.length}`:''}</div>
+          <div class="num-page">${nbPages>1?`Page ${pg+1} / ${nbPages}`:''}</div>
           <div class="date-imp">Le ${dateImp}</div>
         </div>
-      </div>
-      <div class="page-break"></div>`;
+      </div>`);
+      }
     });
   });
+  // Saut de page entre deux pages, sans page blanche a la fin
+  pages = pagesListe.join('\n      <div class="page-break"></div>');
 
   if(!pages){toast('Aucun stagiaire inscrit à afficher (les abandons sont exclus).','warn');return;}
 
@@ -32475,8 +32486,11 @@ function printEtatInscriptions(exportWord=false){
     @page{size:A4 landscape;margin:10mm 8mm}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
     body{font-family:"Times New Roman",Arial,serif;font-size:9px;background:var(--sf);color:#000;padding:6mm}
-    .page{width:100%;margin-bottom:8mm}
-    .page-break{page-break-after:always}
+    .page{width:100%;margin-bottom:8mm;page-break-inside:avoid;break-inside:avoid}
+    .page-break{page-break-after:always;break-after:page}
+    .tbl-inscrits thead{display:table-header-group}
+    .tbl-inscrits tr{page-break-inside:avoid;break-inside:avoid}
+    .num-page{font-weight:700}
     .entete-min{border:1px solid #000;padding:4px 8px;margin-bottom:4px;text-align:center}
     .min-titre{font-size:10px;font-weight:700}
     .min-deleg{border:1px solid #666;display:inline-block;padding:2px 16px;margin-top:4px;font-size:9px}
